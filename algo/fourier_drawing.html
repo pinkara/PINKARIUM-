@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Labo Fourier : Calculs & Précision</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+/* =========================
+   Tokyo Night Theme
+   ========================= */
+:root {
+  --tn-bg: #1a1b26;
+  --tn-bg-2: #24283b;
+  --tn-fg: #a9b1d6;
+  --tn-accent: #7aa2f7; /* Blue */
+  --tn-cyan: #7dcfff;
+  --tn-green: #9ece6a;
+  --tn-orange: #ff9e64;
+  --tn-magenta: #bb9af7;
+  --tn-red: #f7768e;
+  --tn-border: #414868;
+}
+
+body {
+  background-color: var(--tn-bg);
+  color: var(--tn-fg);
+  font-family: 'Inter', system-ui, sans-serif;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Tabs */
+.tab-bar {
+  display: flex;
+  background: var(--tn-bg-2);
+  border-bottom: 1px solid var(--tn-border);
+  padding: 0 20px;
+}
+.tab {
+  padding: 15px 20px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--tn-fg);
+  opacity: 0.7;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+.tab:hover { opacity: 1; background: rgba(255,255,255,0.02); }
+.tab.active { opacity: 1; border-bottom-color: var(--tn-accent); color: var(--tn-accent); }
+
+/* Layout */
+.app-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 400px;
+  background: var(--tn-bg-2);
+  border-right: 1px solid var(--tn-border);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  overflow-y: auto;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.canvas-area {
+  flex: 1;
+  position: relative;
+  background: radial-gradient(circle at center, #1f2335 0%, #1a1b26 100%);
+  cursor: crosshair;
+  overflow: hidden;
+}
+
+/* Components */
+h2 { color: var(--tn-cyan); font-weight: 700; font-size: 1.1rem; margin: 0 0 8px 0; }
+h3 { color: var(--tn-magenta); font-weight: 600; font-size: 0.95rem; margin: 12px 0 6px 0; }
+p { font-size: 0.85rem; line-height: 1.5; color: var(--tn-fg); margin: 0 0 10px 0; opacity: 0.9; }
+
+.btn {
+  background: var(--tn-accent);
+  color: var(--tn-bg);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  font-size: 0.85rem;
+  width: 100%;
+}
+.btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn.secondary { background: transparent; border: 1px solid var(--tn-border); color: var(--tn-fg); }
+.btn.secondary:hover { border-color: var(--tn-accent); color: var(--tn-accent); }
+.btn.success { background: var(--tn-green); color: #000; }
+.btn.icon-only { width: auto; padding: 8px 12px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
+
+.control-group {
+  background: rgba(0,0,0,0.2);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--tn-border);
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* File Input Custom */
+.file-upload-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  width: 100%;
+}
+.file-upload-wrapper input[type=file] {
+  font-size: 100px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Math Inputs */
+.math-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+.math-input-group label { width: 60px; color: var(--tn-fg); }
+input[type="number"] {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--tn-border);
+  color: var(--tn-accent);
+  border-radius: 4px;
+  padding: 4px 8px;
+  width: 100%;
+  font-family: monospace;
+}
+input[type="number"]:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  border-color: transparent;
+}
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--tn-accent);
+  cursor: pointer;
+}
+
+/* Sliders for Synthesis */
+.synth-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  border-left: 3px solid var(--tn-accent);
+}
+.synth-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.synth-field label { display: block; font-size: 0.75rem; color: var(--tn-cyan); margin-bottom: 2px; }
+
+/* C0 Box in Synthesis */
+.c0-box {
+  background: rgba(0,0,0,0.3);
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border-left: 3px solid var(--tn-orange);
+}
+
+/* Overlay Messages */
+.overlay-msg {
+  position: absolute;
+  top: 20px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  padding: 10px 20px;
+  border-radius: 20px;
+  color: white;
+  pointer-events: none;
+  font-size: 1rem;
+  opacity: 0;
+  transition: opacity 0.3s;
+  text-align: center;
+  border: 1px solid var(--tn-border);
+}
+.overlay-msg.visible { opacity: 1; }
+
+.challenge-step {
+  border-left: 3px solid var(--tn-orange);
+  padding-left: 10px;
+  margin-bottom: 10px;
+}
+.challenge-step.done { border-color: var(--tn-green); opacity: 0.6; }
+.challenge-step.active { border-color: var(--tn-orange); background: rgba(255, 158, 100, 0.05); }
+
+.data-box {
+  font-family: monospace;
+  background: rgba(0,0,0,0.4);
+  padding: 8px;
+  border-radius: 4px;
+  color: var(--tn-white);
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+.success-msg { color: var(--tn-green); font-weight: bold; margin-top: 6px; }
+.error-msg { color: var(--tn-red); font-weight: bold; margin-top: 6px; }
+
+/* Math Box */
+.math-formula-box {
+  background: rgba(0,0,0,0.3);
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  border-left: 3px solid var(--tn-magenta);
+  margin-bottom: 10px;
+  overflow-x: auto;
+}
+.collapsible-content { display: none; margin-top: 8px; }
+.collapsible-content.open { display: block; }
+
+/* SVG Code Box */
+.svg-code-box {
+  background: #111;
+  color: var(--tn-green);
+  font-family: monospace;
+  font-size: 0.75rem;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--tn-border);
+  word-break: break-all;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+/* Checkbox Toggle */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.toggle-label { font-size: 0.85rem; color: var(--tn-white); }
+input[type="checkbox"] { accent-color: var(--tn-accent); transform: scale(1.2); cursor: pointer; }
+
+</style>
+</head>
+<body>
+
+<!-- Tab Navigation -->
+<div class="tab-bar">
+  <div class="tab active" onclick="switchMode('analyze')" id="tab-analyze">Mode 1 : TP Mathématique \( ({\color{#9ece6a} c}_{\color{orange} 0}, {\color{#9ece6a} c}_{\color{orange} 1}, {\color{#9ece6a} c}_{\color{orange} -1}) \)</div>
+  <div class="tab" onclick="switchMode('synthesize')" id="tab-synthesize">Mode 2 : Synthèse (Saisie)</div>
+</div>
+
+<div class="app-container">
+  
+  <!-- SIDEBAR (Dynamic Content) -->
+  <div class="sidebar" id="sidebar-content">
+    <!-- Content injected via JS -->
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-area" id="canvas-container">
+    <canvas id="main-canvas"></canvas>
+    <div id="msg-overlay" class="overlay-msg"></div>
+  </div>
+
+</div>
+
+<!-- TEMPLATES FOR SIDEBAR -->
+<template id="tmpl-analyze">
+  <div>
+    <h2>1. Théorie & Acquisition</h2>
+
+    <!-- Section Théorie -->
+    <div class="control-group" style="margin-bottom:15px;">
+      <h3 style="margin-top:0; cursor:pointer;" onclick="toggleTheory()">📘 Du Continu au Discret (Théorie) ▼</h3>
+      <div id="theory-content" class="collapsible-content">
+        
+        <p><strong>1. Formule Continue (Théorique)</strong><br>
+        Si votre dessin était une courbe parfaite \( f({\color{#bb9af7}t}) \) :</p>
+        <div class="math-formula-box" style="border-left-color:var(--tn-cyan)">
+           \( \displaystyle {\color{#9ece6a} c}_{\color{orange}n} = \int_0^1 f({\color{#bb9af7}t}) \cdot e^{-2\pi i {\color{orange}n} {\color{#bb9af7}t}} \, d{\color{#bb9af7}t} \)
+        </div>
+        
+        <p><strong>2. Lien avec les Courbes de Bézier (SVG)</strong><br>
+        En informatique (vectoriel), \( f({\color{#bb9af7}t}) \) est décrite par des courbes de <strong>Bézier</strong> (polynômes). C'est le format SVG.</p>
+        <button class="btn secondary" style="font-size:0.75rem; padding:4px 8px; margin-bottom:8px;" onclick="showSvgCode()">👁️ Voir mon \(f({\color{#bb9af7}t})\) (Code SVG)</button>
+        <div id="svg-display" class="svg-code-box" style="display:none;"></div>
+        
+        <p style="margin-top:8px;"><strong>3. Formule Discrète (Pratique)</strong><br>
+        Pour calculer, on échantillonne \(f({\color{#bb9af7}t})\) en \({\color{#f7768e}N}\) points \( x_k \) (pixels) :</p>
+        <div class="math-formula-box">
+          \( \displaystyle {\color{#9ece6a} c}_{\color{orange}n} \approx \frac{1}{{\color{#f7768e}N}} \sum_{k=0}^{{\color{#f7768e}N}-1} x_k \cdot e^{-i \frac{2\pi}{{\color{#f7768e}N}} {\color{orange}n} k} \)
+        </div>
+      </div>
+    </div>
+    
+    <!-- Image Upload Section -->
+    <div class="control-group" style="margin-bottom: 15px;">
+      <h3 style="margin-top:0;">Image de Fond (Calque)</h3>
+      <div class="file-upload-wrapper">
+        <button class="btn secondary">📁 Charger une image...</button>
+        <input type="file" id="bg-file-input" accept="image/*" onchange="handleImageUpload(this)">
+      </div>
+      <div id="bg-controls" style="display:none; margin-top:10px;">
+        <label>Opacité :</label>
+        <input type="range" min="0" max="1" step="0.05" value="0.5" oninput="updateBgOpacity(this.value)">
+        <button onclick="removeBgImage()" class="btn danger" style="margin-top:5px; font-size:0.75rem; padding:4px;">Retirer</button>
+      </div>
+    </div>
+
+    <p>Tracez votre forme \( f({\color{#bb9af7}t}) \) ci-contre.</p>
+    <p style="font-size:0.8rem; color:var(--tn-orange); margin-top:-6px;">(Clic Droit pour marquer des points)</p>
+    
+    <div class="toolbar">
+        <button id="btn-undo" class="btn secondary icon-only" title="Annuler (Ctrl+Z)" onclick="undoAction()">↶</button>
+        <button id="btn-redo" class="btn secondary icon-only" title="Rétablir (Ctrl+Shift+Z)" onclick="redoAction()">↷</button>
+        <button id="btn-reset" class="btn secondary" style="flex:1;">Nouveau Tracé</button>
+    </div>
+  </div>
+
+  <div id="challenge-area" style="display:none;">
+    <h2>2. Calcul des Coefficients</h2>
+    
+    <!-- Step 1: C-1 -->
+    <div id="step-cneg1" class="control-group challenge-step">
+      <h3>A. Coefficient \({\color{#9ece6a} c}_{\color{orange}-1} \) (n=-1)</h3>
+      <div class="data-box">
+        <div style="font-weight:bold; margin-bottom:4px; color:var(--tn-magenta)">Données du tracé :</div>
+        Points \({\color{#f7768e}N}\) = <span class="val-N"></span><br>
+        <hr style="border-color:var(--tn-border); margin:4px 0;">
+        Résultat complexe \( ({\color{#9ece6a} c}_{\color{orange}-1}) \) :<br>
+        \( ({\color{#ff8080}a}) \) Réel = <span id="data-cneg1-re"></span><br>
+        \( ({\color{#8095ff}b}) \) Imag. = <span id="data-cneg1-im"></span> 
+      </div>
+      
+      <div class="math-input-group">
+        <label style="width:100px;">Rayon \( (R) \) :</label>
+        <input type="number" id="in-cneg1-amp" placeholder="Amplitude">
+      </div>
+      <div class="math-input-group">
+        <label style="width:100px;">Phase \( (\theta) \) :</label>
+        <input type="number" id="in-cneg1-phase" placeholder="Degrés (ex: -30)">
+      </div>
+      
+      <button onclick="checkCNeg1()" class="btn success" style="margin-top:8px;">Vérifier</button>
+      <div id="res-cneg1"></div>
+    </div>
+
+    <!-- Step 2: C0 -->
+    <div id="step-c0" class="control-group challenge-step" style="opacity:0.5; pointer-events:none;">
+      <h3>B. Centre \( {\color{#9ece6a} c}_{\color{orange} 0} \) (Moyenne)</h3>
+      <div class="data-box">
+        <div style="font-weight:bold; margin-bottom:4px; color:var(--tn-magenta)">Données pour le calcul :</div>
+        Points \({\color{#f7768e}N}\) = <span class="val-N"></span><br>
+        Somme \( \sum x_k \) = <span id="data-sumX"></span><br>
+        Somme \( \sum y_k \) = <span id="data-sumY"></span>
+      </div>
+      
+      <div class="math-input-group">
+        <label>x (moy) :</label>
+        <input type="number" id="in-c0-x" placeholder="Ex: 150">
+      </div>
+      <div class="math-input-group">
+        <label>y (moy) :</label>
+        <input type="number" id="in-c0-y" placeholder="Ex: -20">
+      </div>
+      
+      <button onclick="checkC0()" class="btn success" style="margin-top:8px;">Vérifier</button>
+      <div id="res-c0"></div>
+    </div>
+
+    <!-- Step 3: C1 -->
+    <div id="step-c1" class="control-group challenge-step" style="opacity:0.5; pointer-events:none;">
+      <h3>C. Fondamentale \( {\color{#9ece6a} c}_{\color{orange}1} \) (n=1)</h3>
+      <div class="data-box">
+        Résultat complexe \( ({\color{#9ece6a} c}_{\color{orange}1}) \) :<br>
+        \( ({\color{#ff8080}a}) \) Réel = <span id="data-c1-re"></span><br>
+        \( ({\color{#8095ff}b}) \) Imag. = <span id="data-c1-im"></span>
+      </div>
+      
+      <div class="math-input-group">
+        <label style="width:100px;">Rayon \( (R) \) :</label>
+        <input type="number" id="in-c1-amp" placeholder="Amplitude">
+      </div>
+      <div class="math-input-group">
+        <label style="width:100px;">Phase \( (\theta) \) :</label>
+        <input type="number" id="in-c1-phase" placeholder="Degrés (ex: 45)">
+      </div>
+      
+      <button onclick="checkC1()" class="btn success" style="margin-top:8px;">Vérifier</button>
+      <div id="res-c1"></div>
+    </div>
+
+    <div id="step-final" class="control-group" style="display:none; border-color:var(--tn-green);">
+      <button id="btn-anim" class="btn">Voir la Reconstruction</button>
+    </div>
+    
+    <!-- NEW SECTION: Geometry -->
+    <div id="geo-area" style="margin-top:20px; border-top:1px solid var(--tn-border); padding-top:15px;">
+       <h2>3. Géométrie Bézier</h2>
+       
+       <div class="control-group">
+         <div class="toggle-row">
+           <span class="toggle-label">Activer Édition \( (P_0, P_1...) \)</span>
+           <input type="checkbox" id="check-edit-bezier" onchange="toggleBezierEdit(this.checked)">
+         </div>
+         <p style="font-size:0.75rem; color:var(--tn-comment);">
+           Déplacez les points verts pour modifier la courbe. <br>
+           <span style="color:var(--tn-cyan)">Sélectionnez un point</span> (clic) et appuyez sur <span style="color:var(--tn-red)">SUPPR</span> pour le retirer.
+         </p>
+         
+         <div style="margin-top:10px;">
+           <label style="font-size:0.8rem; color:var(--tn-cyan);">Paramètre \(t\) (Construction) : <span id="t-val-display">0.00</span></label>
+           <input type="range" min="0" max="1" step="0.001" value="0" oninput="updateTParam(this.value)">
+         </div>
+         <p style="font-size:0.75rem; color:var(--tn-comment); margin-top:5px;">Affiche la construction de De Casteljau (tangentes).</p>
+       </div>
+    </div>
+    <!-- NEW SECTION: Cn Calculator -->
+    <div id="cn-calculator" style="margin-top:20px; border-top:1px solid var(--tn-border); padding-top:15px;">
+       <h2>4. Calculateur \( ({\color{#9ece6a} c}_{\color{orange}n}) \)</h2>
+       <div class="control-group">
+         <p style="font-size:0.75rem; color:var(--tn-comment);">Entrez un entier \({\color{orange}n}\) pour obtenir les valeurs de \({\color{#9ece6a} c}_{\color{orange}n}\).</p>
+         <div class="math-input-group">
+           <label style="width:40px;">\({\color{orange}n} \) :</label>
+           <input type="number" id="in-cn-n" value="1" step="1" oninput="showCnDetails(this.value)" placeholder="ex: 2, -5...">
+         </div>
+         
+         <div id="cn-details" class="data-box" style="margin-top:10px; display:none;">
+            <div style="font-weight:bold; color:var(--tn-accent); margin-bottom:4px;">Résultat pour \({\color{orange}n}=\) <span id="disp-n"></span> :</div>
+            
+            <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+              <span>Réel \( ({\color{#ff8080}a}) \) :</span> <span id="val-cn-re" style="font-family:monospace; color:var(--tn-cyan)"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span>Imag. \( ({\color{#8095ff}b}) \) :</span> <span id="val-cn-im" style="font-family:monospace; color:var(--tn-magenta)"></span>
+            </div>
+            <div style="border-top:1px dashed var(--tn-border); margin:4px 0;"></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+              <span>Rayon \( (R) \) :</span> <span id="val-cn-amp" style="font-family:monospace; color:var(--tn-orange)"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span>Phase \( (\theta) \) :</span> <span id="val-cn-phase" style="font-family:monospace; color:var(--tn-green)"></span> <span>|</span> <span id="val-cn-phase-rad" style="font-family:monospace; color:var(--tn-green)"></span>
+            </div>
+         </div>
+       </div>
+    </div>
+  </div>
+</template>
+
+<template id="tmpl-synthesize">
+  <div>
+    <h2>Mode Synthèse</h2>
+    <p>Construisez votre dessin cercle par cercle.</p>
+  </div>
+
+  <div id="c0-controls"></div>
+  <div id="synth-list"></div>
+
+  <button onclick="addEpicycle()" class="btn secondary" style="margin-top:10px;">+ Ajouter un Cercle</button>
+  
+  <div class="control-group" style="margin-top:20px;">
+    <h3>Animation</h3>
+    <button onclick="clearTrace()" class="btn secondary">Effacer la trace</button>
+  </div>
+</template>
+
+<script>
+/* =========================================
+   MATH & UTILS
+   ========================================= */
+class Complex {
+  constructor(a, b) { this.re = a; this.im = b; }
+  add(c) { return new Complex(this.re + c.re, this.im + c.im); }
+  mult(c) { return new Complex(this.re * c.re - this.im * c.im, this.re * c.im + this.im * c.re); }
+}
+
+function dft(x) {
+  const X = [];
+  const N = x.length;
+  for (let k = 0; k < N; k++) {
+    let sum = new Complex(0, 0);
+    for (let n = 0; n < N; n++) {
+      const phi = (2 * Math.PI * k * n) / N;
+      const c = new Complex(Math.cos(phi), -Math.sin(phi));
+      sum = sum.add(x[n].mult(c));
+    }
+    sum.re /= N; sum.im /= N;
+    let freq = k;
+    if (k > N / 2) freq = k - N; 
+    const amp = Math.sqrt(sum.re**2 + sum.im**2);
+    const phase = Math.atan2(sum.im, sum.re);
+    X[k] = { re: sum.re, im: sum.im, freq, amp, phase };
+  }
+  return X;
+}
+
+// Ramer-Douglas-Peucker Simplification
+function pointLineDist(p, a, b) {
+  const norm = Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+  if (norm === 0) return Math.sqrt((p.x - a.x) ** 2 + (p.y - a.y) ** 2);
+  return Math.abs((p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x)) / norm;
+}
+
+function simplifyDP(points, epsilon) {
+  if (points.length <= 2) return points;
+  let dmax = 0;
+  let index = 0;
+  const end = points.length - 1;
+  for (let i = 1; i < end; i++) {
+    const d = pointLineDist(points[i], points[0], points[end]);
+    if (d > dmax) {
+      index = i;
+      dmax = d;
+    }
+  }
+  if (dmax > epsilon) {
+    const res1 = simplifyDP(points.slice(0, index + 1), epsilon);
+    const res2 = simplifyDP(points.slice(index), epsilon);
+    return res1.slice(0, res1.length - 1).concat(res2);
+  } else {
+    return [points[0], points[end]];
+  }
+}
+
+/* =========================================
+   APP STATE
+   ========================================= */
+const canvas = document.getElementById('main-canvas');
+const ctx = canvas.getContext('2d');
+const container = document.getElementById('canvas-container');
+const sidebar = document.getElementById('sidebar-content');
+const overlay = document.getElementById('msg-overlay');
+
+let mode = 'analyze'; 
+
+// ANALYZE STATE
+let drawing = [];    // The discrete points used for DFT
+let bezierSegments = []; // The Bezier curves {p0, cp1, cp2, p3}
+let markers = []; 
+let fourierX = []; 
+let analyzeState = 0; // 0:Drawing, 1:CNeg1, 2:C0, 3:C1, 4:Done
+let trueC0 = {re:0, im:0};
+let trueC1 = {re:0, im:0, amp:0, phase:0};
+let trueCNeg1 = {re:0, im:0, amp:0, phase:0}; // NEW
+
+let isMouseDown = false;
+let mousePos = {x: -1000, y: -1000}; 
+let time = 0;
+let path = [];
+
+// EDIT MODE STATE
+let isBezierEditMode = false;
+let draggingPoint = null; // { segmentIndex, pointType ('p0','cp1','cp2','p3') }
+let selectedPoint = null; // { segmentIndex, pointType } - NEW
+let tParam = 0; // 0 to 1, for De Casteljau visualization
+
+// BACKGROUND IMAGE STATE
+let bgImg = null;
+let bgOpacity = 0.5;
+
+// HISTORY SYSTEM
+let historyStack = [];
+let historyIndex = -1;
+
+// SYNTHESIZE STATE
+let synthCycles = [
+  { freq: 0, amp: 0, phase: 0 }, 
+  { freq: 1, amp: 100, phase: 0 }, 
+  { freq: -1, amp: 50, phase: 0 }  
+];
+let synthPath = [];
+
+/* =========================================
+   INIT & RESIZE
+   ========================================= */
+function resize() {
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientHeight;
+  if(mode === 'synthesize') clearTrace();
+  if(mode === 'analyze') renderAnalyzeStatic();
+}
+window.addEventListener('resize', resize);
+resize();
+
+function showOverlay(msg, persist=false) {
+  overlay.innerHTML = msg;
+  overlay.classList.add('visible');
+  if(!persist) setTimeout(() => overlay.classList.remove('visible'), 2500);
+}
+function hideOverlay() { overlay.classList.remove('visible'); }
+
+function switchMode(newMode) {
+  mode = newMode;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+mode).classList.add('active');
+  const tmpl = document.getElementById('tmpl-'+mode);
+  sidebar.innerHTML = tmpl.innerHTML;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if (mode === 'analyze') initAnalyze(); else initSynthesize();
+  
+  if (window.MathJax) window.MathJax.typesetPromise();
+}
+
+/* =========================================
+   BEZIER LOGIC & GEOMETRY
+   ========================================= */
+window.toggleTheory = function() {
+  const el = document.getElementById('theory-content');
+  el.classList.toggle('open');
+}
+
+// Generate Bezier Segments from raw points (Smoothing)
+function generateBezierSegments(points, closed = false) {
+  if (points.length < 2) return [];
+  const segs = [];
+  const len = points.length;
+  // Reduced smoothing slightly as points are now sparser
+  const smoothing = 0.2; 
+
+  const getP = (i) => {
+    if (closed) return points[(i + len) % len];
+    else {
+      if (i < 0) return points[0];
+      if (i >= len) return points[len - 1];
+      return points[i];
+    }
+  };
+
+  const getTangent = (i) => {
+    const pPrev = getP(i - 1);
+    const pNext = getP(i + 1);
+    const dx = pNext.x - pPrev.x;
+    const dy = pNext.y - pPrev.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 0.001) return { x: 0, y: 0 };
+    return { x: dx / dist, y: dy / dist };
+  }
+
+  const loopLen = closed ? len : len - 1;
+  for (let i = 0; i < loopLen; i++) {
+    const p0 = getP(i);
+    const p1 = getP(i + 1);
+    const tan0 = getTangent(i); 
+    const tan1 = getTangent(i + 1);
+    const dist = Math.sqrt((p1.x-p0.x)**2 + (p1.y-p0.y)**2);
+    
+    const cp1 = { x: p0.x + tan0.x * dist * smoothing, y: p0.y + tan0.y * dist * smoothing };
+    const cp2 = { x: p1.x - tan1.x * dist * smoothing, y: p1.y - tan1.y * dist * smoothing };
+    
+    segs.push({ p0: {...p0}, cp1, cp2, p3: {...p1} });
+  }
+  return segs;
+}
+
+// Convert Segments back to SVG Path string
+function segmentsToPath(segs) {
+  if (segs.length === 0) return "";
+  let d = `M ${Math.round(segs[0].p0.x)},${Math.round(segs[0].p0.y)}`;
+  for (let s of segs) {
+    d += ` C ${Math.round(s.cp1.x)},${Math.round(s.cp1.y)} ${Math.round(s.cp2.x)},${Math.round(s.cp2.y)} ${Math.round(s.p3.x)},${Math.round(s.p3.y)}`;
+  }
+  return d;
+}
+
+// Resample Bezier segments into discrete points for DFT
+function resampleBezier(segs, spacing = 5) {
+  const newPoints = [];
+  
+  // Cubic Bezier function
+  const cubic = (p0, p1, p2, p3, t) => {
+    const invT = 1 - t;
+    return {
+      x: invT**3*p0.x + 3*invT**2*t*p1.x + 3*invT*t**2*p2.x + t**3*p3.x,
+      y: invT**3*p0.y + 3*invT**2*t*p1.y + 3*invT*t**2*p2.y + t**3*p3.y
+    };
+  };
+
+  for(let s of segs) {
+    // Estimate length to decide samples
+    const d1 = Math.sqrt((s.cp1.x-s.p0.x)**2 + (s.cp1.y-s.p0.y)**2);
+    const d2 = Math.sqrt((s.cp2.x-s.cp1.x)**2 + (s.cp2.y-s.cp1.y)**2);
+    const d3 = Math.sqrt((s.p3.x-s.cp2.x)**2 + (s.p3.y-s.cp2.y)**2);
+    const approxLen = d1 + d2 + d3;
+    const steps = Math.max(5, Math.floor(approxLen / spacing));
+    
+    for(let i=0; i<steps; i++) {
+      newPoints.push(cubic(s.p0, s.cp1, s.cp2, s.p3, i/steps));
+    }
+  }
+  return newPoints;
+}
+
+window.showSvgCode = function() {
+  const display = document.getElementById('svg-display');
+  if (bezierSegments.length === 0) {
+    display.style.display = 'block';
+    display.innerText = "Tracez d'abord quelque chose !";
+    return;
+  }
+  const pathStr = segmentsToPath(bezierSegments);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg">
+  <!-- P0, P1, P2, P3 visibles -->
+  <path d="${pathStr}" stroke="white" fill="none" />
+</svg>`;
+  display.style.display = 'block';
+  display.innerText = svg;
+}
+
+window.toggleBezierEdit = function(val) {
+  isBezierEditMode = val;
+  selectedPoint = null; // Clear selection on toggle
+  renderAnalyzeStatic();
+}
+
+window.updateTParam = function(val) {
+  tParam = parseFloat(val);
+  document.getElementById('t-val-display').innerText = tParam.toFixed(3);
+  renderAnalyzeStatic();
+}
+
+// NEW: Show Cn Details
+window.showCnDetails = function(val) {
+  const n = parseInt(val);
+  const details = document.getElementById('cn-details');
+  if (isNaN(n) || !fourierX || fourierX.length === 0) {
+    if(details) details.style.display = 'none';
+    return;
+  }
+  
+  // Find coefficient for frequency n
+  const c = fourierX.find(f => f.freq === n);
+  
+  if (c && details) {
+    details.style.display = 'block';
+    document.getElementById('disp-n').innerText = n;
+    document.getElementById('val-cn-re').innerText = c.re.toFixed(4);
+    document.getElementById('val-cn-im').innerText = c.im.toFixed(4);
+    document.getElementById('val-cn-amp').innerText = c.amp.toFixed(4);
+    document.getElementById('val-cn-phase-rad').innerText = (c.phase).toFixed(2) + 'rad';
+    document.getElementById('val-cn-phase').innerText = (c.phase * 180 / Math.PI).toFixed(2) + '°';
+  } else if (details) {
+    details.style.display = 'none';
+  }
+}
+
+/* =========================================
+   BACKGROUND & HISTORY
+   ========================================= */
+window.handleImageUpload = function(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        bgImg = img;
+        document.getElementById('bg-controls').style.display = 'block';
+        renderAnalyzeStatic();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+window.updateBgOpacity = function(val) { bgOpacity = parseFloat(val); renderAnalyzeStatic(); }
+window.removeBgImage = function() { bgImg = null; document.getElementById('bg-controls').style.display = 'none'; renderAnalyzeStatic(); }
+
+function saveState() {
+  const state = {
+    drawing: JSON.parse(JSON.stringify(drawing)),
+    bezierSegments: JSON.parse(JSON.stringify(bezierSegments)),
+    markers: JSON.parse(JSON.stringify(markers))
+  };
+  if (historyIndex < historyStack.length - 1) historyStack = historyStack.slice(0, historyIndex + 1);
+  historyStack.push(state);
+  historyIndex++;
+  updateButtons();
+}
+
+function undoAction() {
+  if (historyIndex > 0) {
+    historyIndex--;
+    restoreState(historyStack[historyIndex]);
+  }
+}
+function redoAction() {
+  if (historyIndex < historyStack.length - 1) {
+    historyIndex++;
+    restoreState(historyStack[historyIndex]);
+  }
+}
+function restoreState(state) {
+  drawing = JSON.parse(JSON.stringify(state.drawing));
+  bezierSegments = JSON.parse(JSON.stringify(state.bezierSegments));
+  markers = JSON.parse(JSON.stringify(state.markers));
+  selectedPoint = null; // Clear selection on state change
+  // Re-calc Fourier since drawing changed
+  startMathTP(false); // false = no UI reset
+  renderAnalyzeStatic();
+  updateButtons();
+}
+function updateButtons() {
+  const btnUndo = document.getElementById('btn-undo');
+  const btnRedo = document.getElementById('btn-redo');
+  if(btnUndo) btnUndo.disabled = (historyIndex <= 0);
+  if(btnRedo) btnRedo.disabled = (historyIndex >= historyStack.length - 1);
+}
+
+// Global Key Listeners for Shortcuts
+document.addEventListener('keydown', (e) => {
+  if (mode === 'analyze') {
+    // Undo/Redo
+    if (analyzeState >= 0) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) redoAction(); else undoAction();
+      }
+    }
+    // Delete Point
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedPoint && isBezierEditMode) {
+      e.preventDefault();
+      deleteSelectedPoint();
+    }
+  }
+});
+
+/* =========================================
+   LOGIC: ANALYZE (MATH TP)
+   ========================================= */
+function initAnalyze() {
+  analyzeState = 0;
+  drawing = [];
+  bezierSegments = [];
+  markers = []; 
+  path = [];
+  fourierX = [];
+  isBezierEditMode = false;
+  selectedPoint = null;
+  
+  historyStack = [];
+  historyIndex = -1;
+  saveState(); 
+  
+  showOverlay("Tracez une forme fermée sur l'écran", true);
+  document.getElementById('btn-reset').onclick = initAnalyze;
+  
+  // Re-attach listeners to handle edit mode
+  canvas.onmousedown = (e) => {
+    if (isBezierEditMode) handleBezierInteraction('down', e);
+    else handleDraw('start', e);
+  };
+  canvas.onmousemove = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mousePos.x = e.clientX - rect.left - canvas.width/2;
+    mousePos.y = e.clientY - rect.top - canvas.height/2;
+    
+    if (isBezierEditMode) handleBezierInteraction('move', e);
+    else if (analyzeState === 0) handleDraw('move', e);
+    
+    renderAnalyzeStatic(); 
+  };
+  canvas.onmouseup = () => {
+    if (isBezierEditMode) handleBezierInteraction('up');
+    else handleDraw('end');
+  };
+  
+  // Touch support mapping
+  canvas.ontouchstart = (e) => { e.preventDefault(); if (isBezierEditMode) handleBezierInteraction('down', e.touches[0]); else handleDraw('start', e.touches[0]); };
+  canvas.ontouchmove = (e) => { e.preventDefault(); if (isBezierEditMode) handleBezierInteraction('move', e.touches[0]); else handleDraw('move', e.touches[0]); };
+  canvas.ontouchend = () => { if (isBezierEditMode) handleBezierInteraction('up'); else handleDraw('end'); };
+
+  canvas.onmouseleave = () => { mousePos = {x:-9999, y:-9999}; isMouseDown = false; draggingPoint = null; renderAnalyzeStatic(); };
+
+  canvas.oncontextmenu = (e) => {
+    e.preventDefault();
+    if (isBezierEditMode) return; // No markers in edit mode
+    // We allow markers even if analyzeState > 0 now.
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left - canvas.width/2;
+    const y = e.clientY - rect.top - canvas.height/2;
+    markers.push({x, y});
+    saveState();
+    renderAnalyzeStatic();
+  };
+}
+
+function handleDraw(action, e) {
+  if (analyzeState !== 0) return;
+  const rect = canvas.getBoundingClientRect();
+  if (action === 'start') {
+    if (e.button === 2) return; 
+    drawing = [];
+    isMouseDown = true;
+    hideOverlay();
+    const x = e.clientX - rect.left - canvas.width/2;
+    const y = e.clientY - rect.top - canvas.height/2;
+    drawing.push({x, y});
+  } else if (action === 'move' && isMouseDown) {
+    const x = e.clientX - rect.left - canvas.width/2;
+    const y = e.clientY - rect.top - canvas.height/2;
+    drawing.push({x, y});
+  } else if (action === 'end') {
+    if (isMouseDown) {
+      isMouseDown = false;
+      if (drawing.length > 5) {
+        // 1. Simplify Drawing using RDP (Ramer-Douglas-Peucker)
+        const isClosed = Math.sqrt((drawing[drawing.length-1].x-drawing[0].x)**2 + (drawing[drawing.length-1].y-drawing[0].y)**2) < 20;
+        const simplified = simplifyDP(drawing, 3.0); 
+        
+        // 2. Generate Smooth Bezier from Simplified Points
+        bezierSegments = generateBezierSegments(simplified, isClosed);
+        
+        // 3. Re-sample for DFT (Physics)
+        drawing = resampleBezier(bezierSegments);
+        
+        saveState();
+        startMathTP(true);
+      }
+    }
+  }
+}
+
+// Edit Mode Interaction
+function handleBezierInteraction(action, e) {
+  if (action === 'down') {
+    // Find clicked point
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left - canvas.width/2;
+    const my = e.clientY - rect.top - canvas.height/2;
+    
+    // Check points
+    let hit = null;
+    const hitDist = 8;
+    for(let i=0; i<bezierSegments.length; i++) {
+      const s = bezierSegments[i];
+      if (dist({x:mx, y:my}, s.p3) < hitDist) { hit = {i, type:'p3'}; break; } // Anchor (End)
+      if (dist({x:mx, y:my}, s.cp1) < hitDist) { hit = {i, type:'cp1'}; break; }
+      if (dist({x:mx, y:my}, s.cp2) < hitDist) { hit = {i, type:'cp2'}; break; }
+      if (dist({x:mx, y:my}, s.p0) < hitDist) { hit = {i, type:'p0'}; break; } // Anchor (Start)
+    }
+
+    // Set dragging and selection state
+    if (hit) {
+      draggingPoint = hit;
+      selectedPoint = hit; // Select on click
+    } else {
+      selectedPoint = null; // Deselect if click on empty space
+    }
+    renderAnalyzeStatic(); // Force re-render to show selection
+
+  } else if (action === 'move' && draggingPoint) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left - canvas.width/2;
+    const my = e.clientY - rect.top - canvas.height/2;
+    
+    const {i, type} = draggingPoint;
+    bezierSegments[i][type].x = mx;
+    bezierSegments[i][type].y = my;
+    
+    // Constraint: Keep C1 continuous? 
+    // For simplicity, we assume segments are connected by p3 of prev = p0 of next
+    // If we move p3 of segment i, we must move p0 of segment i+1
+    const len = bezierSegments.length;
+    if (type === 'p3') {
+       const nextI = (i + 1) % len;
+       bezierSegments[nextI].p0.x = mx;
+       bezierSegments[nextI].p0.y = my;
+    } else if (type === 'p0') {
+       const prevI = (i - 1 + len) % len;
+       bezierSegments[prevI].p3.x = mx;
+       bezierSegments[prevI].p3.y = my;
+    }
+    
+    // Live update of DFT?
+    drawing = resampleBezier(bezierSegments);
+    startMathTP(false); // Update math without UI reset
+    
+  } else if (action === 'up') {
+    if (draggingPoint) {
+      draggingPoint = null;
+      saveState();
+    }
+  }
+}
+
+function deleteSelectedPoint() {
+  if (!selectedPoint || bezierSegments.length <= 1) return;
+  const {i, type} = selectedPoint;
+  
+  // Only allow deleting Anchors (Knots) to modify topology
+  if (type === 'p3' || type === 'p0') {
+    // Identify which "Knot" we are deleting.
+    // P3 of segment i connects to P0 of segment i+1.
+    // If user selected P0 of segment i, it's the knot at start of i (end of i-1).
+    
+    let targetIdx = i;
+    // Map selection to "End of Segment X"
+    if (type === 'p0') {
+      targetIdx = (i - 1 + bezierSegments.length) % bezierSegments.length;
+    }
+    
+    // We want to remove the knot at end of targetIdx.
+    // This means merging targetIdx and (targetIdx+1).
+    const nextIdx = (targetIdx + 1) % bezierSegments.length;
+    
+    // Merge logic: Extend target segment to end at next segment's end
+    bezierSegments[targetIdx].p3 = bezierSegments[nextIdx].p3;
+    // Keep next segment's CP2 for shape continuity approx
+    bezierSegments[targetIdx].cp2 = bezierSegments[nextIdx].cp2;
+    
+    // Remove the next segment
+    bezierSegments.splice(nextIdx, 1);
+    
+    // Update Drawing
+    drawing = resampleBezier(bezierSegments);
+    startMathTP(false);
+    selectedPoint = null; // Clear selection
+    renderAnalyzeStatic();
+    saveState();
+  }
+}
+
+function startMathTP(resetUI = true) {
+  const complexData = drawing.map(p => new Complex(p.x, p.y));
+  fourierX = dft(complexData);
+  
+  // Store True Values for Steps
+  // C0
+  let c0Obj = fourierX.find(f => f.freq === 0);
+  trueC0 = c0Obj ? {re: c0Obj.re, im: c0Obj.im} : {re:0, im:0};
+  
+  // C1
+  let c1Obj = fourierX.find(f => f.freq === 1);
+  trueC1 = c1Obj || {re:0, im:0, amp:0, phase:0};
+  
+  // CNeg1 (New)
+  let cNeg1Obj = fourierX.find(f => f.freq === -1);
+  trueCNeg1 = cNeg1Obj || {re:0, im:0, amp:0, phase:0};
+
+  // Sort for animation
+  fourierX.sort((a, b) => b.amp - a.amp);
+  
+  if (resetUI) {
+    analyzeState = 1; // Start with CNeg1
+    document.getElementById('challenge-area').style.display = 'block';
+    document.getElementById('step-cneg1').classList.add('active'); // Activate C-1 First
+    // document.querySelector('.toolbar').style.display = 'none'; // REMOVED: Toolbar stays visible
+  }
+
+  // Update Data Display
+  let sumX = 0, sumY = 0;
+  drawing.forEach(p => { sumX += p.x; sumY += p.y; });
+  
+  // Update ALL N values
+  document.querySelectorAll('.val-N').forEach(el => el.innerText = drawing.length);
+  
+  // Update C-1 (Start)
+  const cNeg1ReEl = document.getElementById('data-cneg1-re');
+  if(cNeg1ReEl) {
+      cNeg1ReEl.innerText = trueCNeg1.re.toFixed(1);
+      document.getElementById('data-cneg1-im').innerText = trueCNeg1.im.toFixed(1);
+  }
+
+  // Update C0 (Sum X/Y)
+  const sumXEl = document.getElementById('data-sumX'); 
+  if (sumXEl) sumXEl.innerText = sumX.toFixed(0);
+  const sumYEl = document.getElementById('data-sumY');
+  if (sumYEl) sumYEl.innerText = sumY.toFixed(0);
+  
+  // Update C1
+  const c1ReEl = document.getElementById('data-c1-re');
+  if(c1ReEl) {
+      c1ReEl.innerText = trueC1.re.toFixed(1);
+      document.getElementById('data-c1-im').innerText = trueC1.im.toFixed(1);
+  }
+  
+  // Update Cn calculator if open
+  const cnInput = document.getElementById('in-cn-n');
+  if (cnInput && fourierX.length > 0) showCnDetails(cnInput.value);
+
+  renderAnalyzeStatic();
+  if (window.MathJax) window.MathJax.typesetPromise();
+}
+
+// Check C-1 (New First Step)
+window.checkCNeg1 = function() {
+  const inAmp = parseFloat(document.getElementById('in-cneg1-amp').value);
+  const inPhase = parseFloat(document.getElementById('in-cneg1-phase').value);
+  const resDiv = document.getElementById('res-cneg1');
+  if (isNaN(inAmp) || isNaN(inPhase)) { resDiv.innerHTML = "<div class='error-msg'>Entrez des valeurs !</div>"; return; }
+  
+  const truePhaseDeg = trueCNeg1.phase * (180/Math.PI);
+  let diffPhase = Math.abs(inPhase - truePhaseDeg);
+  while(diffPhase > 180) diffPhase -= 360;
+  
+  const okAmp = Math.abs(inAmp - trueCNeg1.amp) < 5;
+  const okPhase = Math.abs(diffPhase) < 5;
+  
+  if (okAmp && okPhase) {
+    resDiv.innerHTML = `<div class='success-msg'>Correct !</div>`;
+    document.getElementById('step-cneg1').classList.remove('active');
+    document.getElementById('step-cneg1').classList.add('done');
+    setupC0Step();
+  } else {
+    resDiv.innerHTML = `<div class='error-msg'>Incorrect. Rayon ~${trueCNeg1.amp.toFixed(1)}, Phase ~${truePhaseDeg.toFixed(1)}°</div>`;
+  }
+}
+
+// Step 2: C0
+function setupC0Step() {
+  analyzeState = 2;
+  const step = document.getElementById('step-c0');
+  step.style.opacity = "1";
+  step.style.pointerEvents = "auto";
+  step.classList.add('active');
+}
+window.checkC0 = function() {
+  const inX = parseFloat(document.getElementById('in-c0-x').value);
+  const inY = parseFloat(document.getElementById('in-c0-y').value);
+  const resDiv = document.getElementById('res-c0');
+  if (isNaN(inX) || isNaN(inY)) { resDiv.innerHTML = "<div class='error-msg'>Entrez des valeurs !</div>"; return; }
+  const errX = Math.abs(inX - trueC0.re);
+  const errY = Math.abs(inY - trueC0.im);
+  if (errX < 2.0 && errY < 2.0) {
+    resDiv.innerHTML = `<div class='success-msg'>Correct !</div>`;
+    document.getElementById('step-c0').classList.remove('active');
+    document.getElementById('step-c0').classList.add('done');
+    setupC1Step();
+  } else {
+    resDiv.innerHTML = `<div class='error-msg'>Incorrect. Essayez ${ (trueC0.re).toFixed(1) }, ${ (trueC0.im).toFixed(1) } ?</div>`;
+  }
+}
+
+// Step 3: C1
+function setupC1Step() {
+  analyzeState = 3;
+  const step = document.getElementById('step-c1');
+  step.style.opacity = "1";
+  step.style.pointerEvents = "auto";
+  step.classList.add('active');
+}
+window.checkC1 = function() {
+  const inAmp = parseFloat(document.getElementById('in-c1-amp').value);
+  const inPhase = parseFloat(document.getElementById('in-c1-phase').value);
+  const resDiv = document.getElementById('res-c1');
+  if (isNaN(inAmp) || isNaN(inPhase)) { resDiv.innerHTML = "<div class='error-msg'>Entrez des valeurs !</div>"; return; }
+  const truePhaseDeg = trueC1.phase * (180/Math.PI);
+  let diffPhase = Math.abs(inPhase - truePhaseDeg);
+  while(diffPhase > 180) diffPhase -= 360;
+  const okAmp = Math.abs(inAmp - trueC1.amp) < 5;
+  const okPhase = Math.abs(diffPhase) < 5;
+  if (okAmp && okPhase) {
+    resDiv.innerHTML = `<div class='success-msg'>Excellent !</div>`;
+    document.getElementById('step-c1').classList.remove('active');
+    document.getElementById('step-c1').classList.add('done');
+    document.getElementById('step-final').style.display = 'block';
+    document.getElementById('btn-anim').onclick = startAnalyzeAnimation;
+  } else {
+    resDiv.innerHTML = `<div class='error-msg'>Erreur. Rayon ~${trueC1.amp.toFixed(1)}, Phase ~${truePhaseDeg.toFixed(1)}°</div>`;
+  }
+}
+
+function dist(p1, p2) { return Math.sqrt((p1.x-p2.x)**2 + (p1.y-p2.y)**2); }
+
+function renderAnalyzeStatic() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const cx = canvas.width/2;
+  const cy = canvas.height/2;
+
+  // Background
+  if (bgImg) {
+    ctx.globalAlpha = bgOpacity;
+    const scale = Math.min(canvas.width / bgImg.width, canvas.height / bgImg.height) * 0.8;
+    const w = bgImg.width * scale, h = bgImg.height * scale;
+    ctx.drawImage(bgImg, cx - w/2, cy - h/2, w, h);
+    ctx.globalAlpha = 1.0;
+  }
+  
+  // Draw Curve (Bezier or Lines)
+  if (bezierSegments.length > 0) {
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    const start = bezierSegments[0].p0;
+    ctx.moveTo(start.x + cx, start.y + cy);
+    for (let s of bezierSegments) {
+      ctx.bezierCurveTo(s.cp1.x+cx, s.cp1.y+cy, s.cp2.x+cx, s.cp2.y+cy, s.p3.x+cx, s.p3.y+cy);
+    }
+    ctx.stroke();
+  } else if (drawing.length > 0) {
+    ctx.beginPath(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+    ctx.moveTo(drawing[0].x+cx, drawing[0].y+cy);
+    for(let p of drawing) ctx.lineTo(p.x+cx, p.y+cy);
+    ctx.stroke();
+  }
+  
+  // Draw Bezier Handles (Edit Mode)
+  if (isBezierEditMode) {
+    for (let idx = 0; idx < bezierSegments.length; idx++) {
+      const s = bezierSegments[idx];
+      
+      // Handles lines (Faint green)
+      ctx.strokeStyle = "rgba(158, 206, 106, 0.4)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(s.p0.x+cx, s.p0.y+cy); ctx.lineTo(s.cp1.x+cx, s.cp1.y+cy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(s.p3.x+cx, s.p3.y+cy); ctx.lineTo(s.cp2.x+cx, s.cp2.y+cy); ctx.stroke();
+      
+      // Points Helper Function with NEW HOVER LOGIC
+      const drawPoint = (pt, label, type) => {
+        const d = dist(mousePos, pt);
+        const isHover = d < 10;
+        
+        // Check if this specific point is selected
+        const isSelected = selectedPoint && selectedPoint.i === idx && selectedPoint.type === type;
+        
+        ctx.beginPath();
+        // Point is visible, but slightly bigger on hover
+        ctx.arc(pt.x + cx, pt.y + cy, isHover ? 6 : 4, 0, Math.PI*2);
+        ctx.fillStyle = "#9ece6a"; // --tn-green
+        ctx.fill();
+        
+        // Selection Halo
+        if (isSelected) {
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.strokeStyle = "var(--tn-cyan)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(pt.x + cx, pt.y + cy, 8, 0, Math.PI*2);
+          ctx.stroke();
+        }
+        
+        // Coordinates: ONLY on hover
+        if (isHover) {
+          ctx.fillStyle = "#9ece6a";
+          ctx.font = "11px monospace";
+          ctx.fillText(`${label} (${Math.round(pt.x)}, ${Math.round(pt.y)})`, pt.x + cx + 10, pt.y + cy - 10);
+        }
+      };
+
+      drawPoint(s.p0, "P0", 'p0');
+      drawPoint(s.cp1, "P1", 'cp1'); // CP1 often called P1 in Cubic
+      drawPoint(s.cp2, "P2", 'cp2'); // CP2 often called P2
+      drawPoint(s.p3, "P3", 'p3');
+    }
+  }
+
+  // Draw De Casteljau Construction (Param t)
+  // tParam is 0..1 global. Map to specific segment.
+  if (bezierSegments.length > 0) {
+    const totalLen = bezierSegments.length;
+    const globalT = tParam * totalLen;
+    const segIdx = Math.min(Math.floor(globalT), totalLen - 1);
+    const localT = globalT - segIdx; // 0..1 inside segment
+    
+    // Linear interpolation helper
+    const lerp = (a, b, t) => ({ x: a.x + (b.x - a.x)*t, y: a.y + (b.y - a.y)*t });
+    
+    const s = bezierSegments[segIdx];
+    // Level 1
+    const q0 = lerp(s.p0, s.cp1, localT);
+    const q1 = lerp(s.cp1, s.cp2, localT);
+    const q2 = lerp(s.cp2, s.p3, localT);
+    // Level 2
+    const r0 = lerp(q0, q1, localT);
+    const r1 = lerp(q1, q2, localT);
+    // Level 3 (Point on Curve)
+    const pos = lerp(r0, r1, localT);
+    
+    // Draw Construction
+    if (tParam > 0) {
+      ctx.strokeStyle = "rgba(158, 206, 106, 0.5)"; ctx.lineWidth = 1;
+      // L1
+      ctx.beginPath(); ctx.moveTo(q0.x+cx, q0.y+cy); ctx.lineTo(q1.x+cx, q1.y+cy); ctx.lineTo(q2.x+cx, q2.y+cy); ctx.stroke();
+      // L2
+      ctx.strokeStyle = "rgba(255, 158, 100, 0.7)";
+      ctx.beginPath(); ctx.moveTo(r0.x+cx, r0.y+cy); ctx.lineTo(r1.x+cx, r1.y+cy); ctx.stroke();
+      
+      // Point
+      ctx.fillStyle = "var(--tn-magenta)";
+      ctx.beginPath(); ctx.arc(pos.x+cx, pos.y+cy, 5, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // Markers
+  if (markers.length > 0) {
+    ctx.font = "11px monospace";
+    for(let m of markers) {
+      const d = dist(mousePos, m); const isHover = d < 15;
+      ctx.fillStyle = "#ff9e64"; ctx.beginPath(); ctx.arc(m.x + cx, m.y + cy, isHover?6:4, 0, Math.PI*2); ctx.fill();
+      if (isHover) { ctx.fillStyle = "#ff9e64"; ctx.fillText(`(${Math.round(m.x)}, ${Math.round(m.y)})`, m.x + cx + 10, m.y + cy - 10); }
+    }
+    ctx.textAlign = "right"; ctx.fillStyle = "#ff9e64"; ctx.font = "bold 12px sans-serif";
+    ctx.fillText(`${markers.length} point${markers.length>1?'s':''}`, canvas.width - 15, canvas.height - 15);
+    ctx.textAlign = "left"; 
+  }
+  
+  if (analyzeState >= 2) {
+    ctx.fillStyle = "var(--tn-green)"; ctx.beginPath(); ctx.arc(trueC0.re+cx, trueC0.im+cy, 5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.fillText("C0", trueC0.re+cx+8, trueC0.im+cy);
+  }
+}
+
+function startAnalyzeAnimation() { analyzeState = 4; path = []; time = 0; animateAnalyze(); }
+function animateAnalyze() {
+  if (analyzeState !== 4) return;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const cx = canvas.width/2; const cy = canvas.height/2;
+
+  if (bgImg) {
+    ctx.globalAlpha = bgOpacity;
+    const scale = Math.min(canvas.width / bgImg.width, canvas.height / bgImg.height) * 0.8;
+    const w = bgImg.width * scale, h = bgImg.height * scale;
+    ctx.drawImage(bgImg, cx - w/2, cy - h/2, w, h);
+    ctx.globalAlpha = 1.0;
+  }
+  
+  let x = cx; let y = cy;
+  for (let i = 0; i < fourierX.length; i++) {
+    let prevx = x; let prevy = y;
+    let {freq, amp, phase} = fourierX[i];
+    x += amp * Math.cos(freq * time + phase);
+    y += amp * Math.sin(freq * time + phase);
+    
+    if (i < 50) { 
+        ctx.strokeStyle = "rgba(122, 162, 247, 0.2)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(prevx, prevy, amp, 0, 2 * Math.PI); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(prevx, prevy); ctx.lineTo(x, y); ctx.stroke();
+    }
+  }
+  
+  path.unshift({x, y});
+  if(path.length > drawing.length) path.pop(); 
+  
+  ctx.beginPath(); ctx.strokeStyle = "#bb9af7"; ctx.lineWidth = 3;
+  if(path.length) ctx.moveTo(path[0].x, path[0].y);
+  for(let p of path) ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+  
+  const dt = (2 * Math.PI) / fourierX.length;
+  time += dt;
+  requestAnimationFrame(animateAnalyze);
+}
+
+// Synthesize Logic (No Changes Needed)
+function initSynthesize() { renderSynthControls(); synthPath = []; time = 0; animateSynthesize(); }
+function addEpicycle() { synthCycles.push({ freq: synthCycles.length>1?synthCycles.length:1, amp: 50, phase: 0 }); renderSynthControls(); }
+function removeEpicycle(idx) { synthCycles.splice(idx, 1); renderSynthControls(); }
+function renderSynthControls() {
+  const c0Controls = document.getElementById('c0-controls');
+  if (c0Controls) {
+    const cycle0 = synthCycles[0];
+    const a = cycle0.amp * Math.cos(cycle0.phase);
+    const b = cycle0.amp * Math.sin(cycle0.phase);
+    c0Controls.innerHTML = `<div class="c0-box"><h3 style="margin:0 0 8px 0; color:var(--tn-orange)">Position du Centre \\( ({\\color{#9ece6a} c}_{\\color{orange} 0}) \\)</h3><p style="font-size:0.75rem; margin-bottom:8px;">Forme Cartésienne \\((z = {\\color{#ff8080}a} + i {\\color{#8095ff}b} ))\\)</p><div class="synth-controls"><div class="synth-field"><label>Partie Réelle \\( ({\\color{#ff8080}a}) \\)</label><input type="number" step="1" value="${Math.round(a)}" onchange="updateC0('re', this.value)"></div><div class="synth-field"><label>Partie Imag. \\( ({\\color{#8095ff}b}) \\)</label><input type="number" step="1" value="${Math.round(b)}" onchange="updateC0('im', this.value)"></div></div></div>`;
+  }
+  const list = document.getElementById('synth-list'); list.innerHTML = '';
+  synthCycles.forEach((cycle, i) => {
+    if (i === 0) return; 
+    const div = document.createElement('div'); div.className = 'synth-row';
+    div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:bold; color:var(--tn-fg)">Cercle #${i}</span><button onclick="removeEpicycle(${i})" style="color:var(--tn-red); border:none; background:none; font-weight:bold; cursor:pointer;">✖</button></div><div class="synth-controls"><div class="synth-field"><label>Vitesse (Freq)</label><input type="number" step="1" value="${cycle.freq}" onchange="updateCycle(${i}, 'freq', this.value)"></div><div class="synth-field"><label>Rayon (Amp)</label><input type="number" min="0" step="1" value="${cycle.amp}" onchange="updateCycle(${i}, 'amp', this.value)"></div><div class="synth-field" style="grid-column: span 2"><label>Phase (Radians)</label><div style="display:flex; gap:8px;"><input type="number" step="0.1" value="${cycle.phase}" onchange="updateCycle(${i}, 'phase', this.value)"><span style="font-size:0.75rem; color:var(--tn-comment); display:flex; align-items:center;">≈ ${(cycle.phase * 180/Math.PI).toFixed(0)}°</span></div></div></div>`;
+    list.appendChild(div);
+  });
+  if (window.MathJax) window.MathJax.typesetPromise();
+}
+window.updateC0 = function(part, val) {
+  const v = parseFloat(val); const cycle0 = synthCycles[0];
+  let a = cycle0.amp * Math.cos(cycle0.phase), b = cycle0.amp * Math.sin(cycle0.phase);
+  if (part === 're') a = v; else b = v;
+  cycle0.amp = Math.sqrt(a*a + b*b); cycle0.phase = Math.atan2(b, a);
+}
+window.updateCycle = function(idx, key, val) { synthCycles[idx][key] = parseFloat(val); renderSynthControls(); }
+window.addEpicycle = addEpicycle; window.removeEpicycle = removeEpicycle; window.clearTrace = function() { synthPath = []; }
+function animateSynthesize() {
+  if (mode !== 'synthesize') return;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const cx = canvas.width/2, cy = canvas.height/2;
+  let x = cx, y = cy;
+  for(let i=0; i<synthCycles.length; i++) {
+    let prevx = x, prevy = y;
+    let {freq, amp, phase} = synthCycles[i];
+    x += amp * Math.cos(freq * time + phase);
+    y += amp * Math.sin(freq * time + phase);
+    if (i === 0 && amp > 0) { ctx.strokeStyle = "rgba(255, 158, 100, 0.3)"; ctx.beginPath(); ctx.moveTo(prevx, prevy); ctx.lineTo(x, y); ctx.stroke(); }
+    else if (i > 0) { ctx.strokeStyle = "rgba(122, 162, 247, 0.4)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(prevx, prevy, amp, 0, 2*Math.PI); ctx.stroke(); ctx.beginPath(); ctx.moveTo(prevx, prevy); ctx.lineTo(x, y); ctx.stroke(); }
+  }
+  synthPath.push({x, y}); if (synthPath.length > 1000) synthPath.shift(); 
+  ctx.beginPath(); ctx.strokeStyle = "#bb9af7"; ctx.lineWidth = 3;
+  if(synthPath.length) ctx.moveTo(synthPath[0].x, synthPath[0].y); for(let p of synthPath) ctx.lineTo(p.x, p.y); ctx.stroke();
+  ctx.fillStyle = "#ff9e64"; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fill();
+  time += 0.02; requestAnimationFrame(animateSynthesize);
+}
+switchMode('analyze');
+</script>
+</body>
+</html>
