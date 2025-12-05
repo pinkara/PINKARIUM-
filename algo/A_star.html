@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Module A* — Interactif & Pédagogique (Tokyo Night) — Amélioré</title>
+
+<!-- Tailwind utilities for layout (optional but convenient) -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Prism for Python syntax highlighting (colorized) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" integrity="" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+<!-- MathJax for LaTeX rendering -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+:root{
+  --tn-bg: #1a1b26;
+  --tn-bg-2: #0f1724;
+  --tn-foreground: #a9b1d6;
+  --tn-white: #c0caf5;
+  --tn-blue: #7aa2f7;
+  --tn-cyan: #7dcfff;
+  --tn-green: #9ece6a;
+  --tn-yellow: #e0af68;
+  --tn-orange: #ff9e64;
+  --tn-magenta: #bb9af7;
+  --tn-comment: #565f89;
+  --tn-border: #414868;
+  --tn-storm: #24283b;
+  --glass: rgba(255,255,255,0.02);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--tn-bg);color:var(--tn-foreground);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial}
+.latex_color_text{color: #65c0ff;}
+
+.app{max-width:1400px;margin:18px auto;padding:18px;display:grid;grid-template-areas:"main sidebar" "footer footer";grid-template-columns:1fr 540px;flex-direction: column;gap:18px}
+@media(max-width:1100px){.app{grid-template-columns:1fr;grid-template-areas:"main" "sidebar" "footer"}}
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(122,162,247,0.04);border-radius:12px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+.header{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--tn-blue),var(--tn-cyan));display:flex;align-items:center;justify-content:center;color:#021;font-weight:800;font-family:monospace}
+.title{font-size:1.25rem;font-weight:700;color:var(--tn-white)}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.btn{background:var(--tn-blue);color:var(--tn-bg);padding:8px 12px;border-radius:10px;font-weight:700;border:none;cursor:pointer}
+.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--tn-white)}
+.btn.warn{background:linear-gradient(90deg,var(--tn-orange),#f59e0b);color:#000}
+.btn[disabled]{opacity:0.5;cursor:not-allowed}
+.panel{grid-area:main;display:flex;flex-direction:column;gap:12px}
+.grid-wrap{background:var(--tn-storm);padding:14px;border-radius:10px;border:1px solid var(--tn-border);display:flex;justify-content:center;align-items:center}
+.grid{display:grid;gap:6px;background:transparent;user-select:none}
+.cell{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-weight:700;font-size:12px;color:var(--tn-white);background:var(--tn-storm);position:relative;border:1px solid rgba(255,255,255,0.03);transition:background .22s ease, box-shadow .28s ease, transform .18s cubic-bezier(.2,.9,.2,1), opacity .18s ease}
+.cell .sub{position:absolute;bottom:2px;left:4px;font-size:9px;opacity:0.95;color:var(--tn-white)}
+.cell .fh{position:absolute;top:3px;right:4px;font-size:10px;opacity:0.95;color:var(--tn-white)}
+.cell.start{background:linear-gradient(180deg,var(--tn-blue),#5aa0f2);color:black;transform:scale(1.02)}
+.cell.goal{background:linear-gradient(180deg,var(--tn-green),#7fd88a);color:black;transform:scale(1.02)}
+.cell.wall{background:rgba(65,72,104,0.98);color:var(--tn-white);box-shadow:inset 0 -4px 10px rgba(0,0,0,0.6)}
+.cell.open{background:linear-gradient(180deg,var(--tn-orange),#ffb087);color:black;box-shadow:0 6px 20px rgba(255,160,80,0.12);transform:translateY(-2px) scale(1.03)}
+.cell.closed{background:rgba(86,95,137,0.95);color:white;box-shadow:0 6px 18px rgba(80,85,140,0.06);transform:scale(.995)}
+.cell.path{background:linear-gradient(180deg,var(--tn-magenta),#c299ff);color:black;box-shadow:0 12px 40px rgba(160,120,255,0.12);transform:scale(1.06)}
+/* glow classes for stronger effect on trace highlight */
+.cell.glow-pop{box-shadow:0 0 18px 6px rgba(122,162,247,0.12), inset 0 -6px 18px rgba(0,0,0,0.4);transform:scale(1.08)}
+.cell.glow-open{box-shadow:0 0 18px 6px rgba(255,160,80,0.12);transform:translateY(-2px) scale(1.06)}
+.cell.glow-goal{box-shadow:0 0 22px 8px rgba(158,206,106,0.14);transform:scale(1.08)}
+.legend{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.legend .item{display:flex;gap:6px;align-items:center;font-size:0.9rem;color:var(--tn-foreground)}
+.legend .sw{width:18px;height:18px;border-radius:4px;border:1px solid rgba(0,0,0,0.12)}
+.info-right{grid-area:sidebar;display:flex;flex-direction:column;gap:12px}
+.code-block{background:var(--tn-bg);border:1px solid var(--tn-border);border-radius:10px;padding:12px;overflow:auto}
+.code-block pre {font-size: 15px;white-space: pre-wrap;}
+.panel-section{background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.005));padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
+.list{max-height:220px;overflow:auto;padding:6px;display:flex;flex-direction:column;gap:6px}
+.list .row{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px;border-radius:6px;background:rgba(255,255,255,0.01);cursor:pointer}
+.math-vis-row{display:grid;grid-template-columns:120px 1fr 48px;align-items:center;gap:8px;margin-bottom:8px;font-size:1rem}
+.math-vis-bar-container{width:100%;height:16px;background:var(--tn-storm);border-radius:4px;overflow:hidden;border:1px solid rgba(0,0,0,0.2)}
+.math-vis-bar{height:100%;width:0%;transition:width .35s ease;border-radius:3px}
+.math-vis-val{font-weight:600;text-align:right;font-size:0.95rem}
+.step-explain{margin-top:10px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.005));padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
+@media(max-width:700px){.cell{width:36px;height:36px;font-size:11px}.grid{gap:4px}.math-vis-row{grid-template-columns:100px 1fr 40px}}
+
+.input{
+      background:var(--tn-bg-2);
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--tn-white);
+      padding:6px 8px;
+      border-radius:8px;
+      width:6rem;
+      text-align:center;
+    }
+
+    /* Code block */
+    .code-block{ background:var(--tn-bg-2); border:1px solid var(--tn-border); border-radius:10px; padding:12px; overflow:auto; color:var(--tn-white) }
+    pre[class*="language-"]{ background:transparent; color:var(--tn-white); padding:0; margin:0; font-size:14px; white-space:pre-wrap; word-break:break-word; }
+
+    /* Show tokens clickable */
+    .clickable{ cursor:help; text-decoration:underline dotted; text-underline-offset:3px; color:var(--tn-cyan) }
+    .clickable:hover{ color:var(--tn-blue); }
+
+    /* Slide / presentation area */
+    .slides { min-height:520px; display:flex; flex-direction:column; gap:12px; }
+    .slide { display:block; }
+    .slide.hidden{ display:none; }
+
+    /* Matrix display */
+    .matrix {
+      background:var(--tn-storm);
+      padding:1rem;
+      border-radius:8px;
+      display:inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono';
+      color:var(--tn-white);
+    }
+
+    /* Popover */
+    .popover-panel {
+      position: fixed;
+      z-index: 9999;
+      background: var(--tn-bg);
+      border: 1px solid var(--tn-blue);
+      border-radius: .5rem;
+      padding: .75rem;
+      width: 320px;
+      color: var(--tn-foreground);
+      box-shadow: 0 10px 30px rgba(122,162,247,.08);
+      pointer-events: none;
+      transform: scale(.98);
+      transition: all .12s ease;
+      opacity: 0;
+      font-size:0.95rem;
+    }
+    .popover-visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+    .popover-title { color: var(--tn-blue); font-weight: 700; margin-bottom: .25rem; }
+    .popover-body { color: var(--tn-foreground); opacity: .95; }
+
+    /* code-step visuals (for the inline visible code) */
+    .code-step { display:block; transition: opacity .25s ease, transform .18s ease; opacity: .55; }
+    .code-step.active { opacity: 1; }
+    .code-step.highlight { opacity: 1; transform: scale(1.02); text-shadow: 0 0 12px rgba(122,162,247,.12); }
+
+</style>
+</head>
+<!-- Popover (comme dans test.html) -->
+<div id="popover-panel" class="popover-panel" aria-hidden="true">
+  <div class="popover-title" id="popover-title">Définition</div>
+  <div class="popover-body" id="popover-content">Contenu</div>
+</div>
+
+<body>
+<div class="app">
+  <div class="card panel">
+    <div class="header">
+      <div class="logo">A*</div>
+      <div>
+        <div class="title">Atelier A* — Visualisation & pas-à-pas</div>
+        <div class="small" style="color:var(--tn-comment)">Comprends g(n), h(n), f(n) — manipule la grille, choisis l'heuristique, exécute.</div>
+      </div>
+    </div>
+
+    <div class="top-row" style="display:flex;justify-content:space-between;align-items:center">
+      <div class="controls">
+        <button id="btn-play" class="btn">▶ Play</button>
+        <button id="btn-step" class="btn secondary">Step</button>
+        <button id="btn-pause" class="btn secondary" disabled>Pause</button>
+        <button id="btn-reset" class="btn" style="background:linear-gradient(90deg,var(--tn-cyan), var(--tn-blue));">Reset</button>
+
+        <select id="heuristic" class="btn secondary" style="padding:6px 10px;">
+          <option value="manhattan">Heuristique : Manhattan</option>
+          <option value="euclidean">Heuristique : Euclidienne</option>
+          <option value="diag">Heuristique : Diagonale (Octile)</option>
+        </select>
+
+        <label class="small" title="Taille de la grille" style="color:var(--tn-white)">
+          Taille
+          <input id="grid-size" type="number" min="6" max="28" value="12" style="width:64px;margin-left:6px;background:transparent;color:var(--tn-white);border:1px solid rgba(255,255,255,0.04);padding:4px;border-radius:6px;">
+        </label>
+      </div>
+
+      <div class="legend">
+        <div class="item"><div class="sw" style="background:linear-gradient(180deg,var(--tn-blue), #5aa0f2)"></div> Start</div>
+        <div class="item"><div class="sw" style="background:linear-gradient(180deg,var(--tn-green), #7fd88a)"></div> Goal</div>
+        <div class="item"><div class="sw" style="background:linear-gradient(180deg,var(--tn-magenta), #c299ff)"></div> Path</div>
+        <div class="item"><div class="sw" style="background:var(--tn-orange)"></div> Open</div>
+        <div class="item"><div class="sw" style="background:var(--tn-storm)"></div> Closed</div>
+        <div class="item"><div class="sw" style="background:rgba(65,72,104,1)"></div> Wall</div>
+      </div>
+    </div>
+
+    <div class="grid-wrap" style="margin-top:8px;">
+      <div id="grid" class="grid" aria-label="Grille A*"></div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:space-between;margin-top:10px;align-items:center">
+      <div class="small" style="color:var(--tn-white)">Clique sur une cellule pour basculer Mur / Libre. Ctrl+clic : définir Start. Shift+clic : définir Goal.</div>
+      <div class="small" style="color:var(--tn-white)">Export/Import grille : <button id="btn-export" class="btn secondary">Export</button></div>
+    </div>
+
+          <!-- Right: Code block showing algorithm (kept visible) -->
+      <div style="margin-top:16px" class="code-block card">
+        <div class="title text-lg font-bold mb-2" style="color:var(--tn-blue)">Code Python — Faddeev-LeVerrier</div>
+        <pre><code id="python-code" class="language-python">
+import heapq
+import math
+
+# -------------------------
+#     HEURISTIQUES
+# -------------------------
+
+def manhattan(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+def euclidean(a, b):
+    return math.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
+
+def octile(a, b):
+    dx = abs(a[0] - b[0])
+    dy = abs(a[1] - b[1])
+    return (math.sqrt(2) - 1) * min(dx, dy) + max(dx, dy)
+
+
+# -------------------------
+#     VOISINS
+# -------------------------
+
+def neighbors(grid, node, allow_diag=True, no_corner_cut=True):
+    x, y = node
+    
+    dirs4 = [(1,0), (-1,0), (0,1), (0,-1)]
+    dirs8 = dirs4 + [(1,1), (1,-1), (-1,1), (-1,-1)]
+    
+    dirs = dirs8 if allow_diag else dirs4
+
+    for dx, dy in dirs:
+        nx, ny = x + dx, y + dy
+        
+        # hors limite
+        if not (0 <= nx < len(grid) and 0 <= ny < len(grid[0])):
+            continue
+        
+        # mur ?
+        if grid[nx][ny] == 1:
+            continue
+        
+        # empêcher la diagonale entre 2 murs
+        if allow_diag and no_corner_cut and dx != 0 and dy != 0:
+            if grid[x][ny] == 1 or grid[nx][y] == 1:
+                continue
+        
+        # coût du mouvement
+        cost = math.sqrt(2) if (dx != 0 and dy != 0) else 1
+        
+        yield ( (nx, ny), cost )
+
+
+# -------------------------
+#  RECONSTRUCTION CHEMIN
+# -------------------------
+
+def reconstruct_path(came_from, current):
+    path = [current]
+    while current in came_from:
+        current = came_from[current]
+        path.append(current)
+    return path[::-1]
+
+
+# -------------------------
+#          A*
+# -------------------------
+
+def a_star(grid, start, goal, heuristic, allow_diag=True, no_corner_cut=True):
+    open_set = []
+    heapq.heappush(open_set, (0, start))
+
+    came_from = {}
+    g_score = {start: 0}
+    closed = set()
+
+    while open_set:
+        _, current = heapq.heappop(open_set)
+        
+        if current == goal:
+            return reconstruct_path(came_from, current)
+
+        if current in closed:
+            continue
+        
+        closed.add(current)
+
+        for neighbor, cost in neighbors(grid, current, allow_diag, no_corner_cut):
+            tentative_g = g_score[current] + cost
+
+            if neighbor not in g_score or tentative_g < g_score[neighbor]:
+                came_from[neighbor] = current
+                g_score[neighbor] = tentative_g
+                f = tentative_g + heuristic(neighbor, goal)
+                heapq.heappush(open_set, (f, neighbor))
+
+    return None
+
+
+# -------------------------
+#        EXEMPLE
+# -------------------------
+
+grid = [
+    [0,0,0,0],
+    [0,1,1,0],
+    [0,0,1,0],
+    [0,0,0,0],
+
+]
+
+start = (0,0)
+goal  = (3,3)
+
+# Autorise les diagonales + autorise le passage diagonal même si murs (pas de corner cut)
+path = a_star(grid, start, goal, octile, allow_diag=True, no_corner_cut=False)
+
+print("Chemin trouvé :", path)
+
+        </code></pre>
+      </div>
+    </div>
+
+  
+
+  <div class="info-right">
+    <div class="card panel-section">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>État de l'algorithme</strong></div>
+        <div id="status" class="small">Idle</div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <div style="flex:1">
+          <div class="small" style="margin-bottom:6px">Open set (min-heap)</div>
+          <div id="open-list" class="list" style="max-height:160px;"></div>
+        </div>
+        <div style="width:12px"></div>
+        <div style="flex:1">
+          <div class="small" style="margin-bottom:6px">Closed set</div>
+          <div id="closed-list" class="list" style="max-height:160px;"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <div class="small">Console pédagogique :</div>
+        <pre id="log" style="background:transparent;border:none;color:var(--tn-foreground);padding:6px;margin:0;max-height:120px;overflow:auto;font-size:13px;"></pre>
+      </div>
+    </div>
+
+    <div class="card panel-section" id="step-math-vis">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div><strong>Focus sur l'Étape</strong></div>
+        <div id="step-node" class="small" style="color:var(--tn-white);font-weight:600">Nœud : -</div>
+      </div>
+      <p class="small" style="margin-bottom:10px;line-height:1.4">Cliquez sur une étape dans la liste ci-dessous pour expliquer chaque décision (pop / open / goal).</p>
+
+      <div class="math-vis-row">
+        <div class="math-vis-label"><span style="color:var(--tn-green)">$$g(n)$$</span><span class="small" style="display:block">(Coût réel)</span></div>
+        <div class="math-vis-bar-container"><div id="step-g-bar" class="math-vis-bar" style="background:var(--tn-green);width:0%"></div></div>
+        <div id="step-g-val" class="math-vis-val" style="color:var(--tn-green)">-</div>
+      </div>
+
+      <div class="math-vis-row">
+        <div class="math-vis-label"><span style="color:var(--tn-yellow)">$$h(n)$$</span><span class="small" style="display:block">(Heuristique)</span></div>
+        <div class="math-vis-bar-container"><div id="step-h-bar" class="math-vis-bar" style="background:var(--tn-yellow);width:0%"></div></div>
+        <div id="step-h-val" class="math-vis-val" style="color:var(--tn-yellow)">-</div>
+      </div>
+
+      <div class="math-vis-row" style="border-top:1px solid var(--tn-border);padding-top:8px;margin-top:6px">
+        <div class="math-vis-label"><span style="color:var(--tn-cyan)">$$f(n)$$</span><span class="small" style="display:block">(Score total)</span></div>
+        <div class="math-vis-bar-container"><div id="step-f-bar" class="math-vis-bar" style="background:var(--tn-cyan);width:0%"></div></div>
+        <div id="step-f-val" class="math-vis-val" style="color:var(--tn-cyan);font-weight:700">-</div>
+      </div>
+
+      <div id="step-explain" class="step-explain small" style="min-height:54px">Aucune étape sélectionnée.</div>
+
+      <div style="margin-top:10px">
+        <div class="small" style="margin-bottom:6px">Historique des étapes (trace) :</div>
+        <div id="trace-list" class="list" style="max-height:140px"></div>
+      </div>
+    </div>
+
+    
+
+  <div class="card" style="grid-area:footer;margin-top:10px">
+    <div class="title" style="color:var(--tn-blue);margin-bottom:12px">Comprendre A* : Les Mathématiques</div>
+    <div style="font-size:1rem;line-height:1.6;color:var(--tn-foreground)">
+      <p>L'algorithme A* combine un coût exact depuis le départ et une estimation vers l'arrivée :</p>
+      <div style="font-size:1.1rem;font-weight:600;color:var(--tn-cyan);margin:10px 0;padding:10px;background:var(--tn-storm);border-radius:8px;text-align:center">$$f(n)=g(n)+h(n)$$</div>
+
+      <p><strong><span class="latex_color_text">\(g(n)\)</span> (coût réel)</strong> : somme des coûts le long du chemin depuis le départ jusqu'au nœud <span class="latex_color_text">\(n\)</span>. Pour une grille régulière :
+      <span class="latex_color_text">$$g(n)=\sum_{i=0}^{k-1} cost(p_i,p_{i+1}),\quad p_0=Start,\ p_k=n$$</span>
+      où <span class="latex_color_text">\(\text{cost}\)</span> vaut généralement <span class="latex_color_text">\(1\)</span> pour un mouvement orthogonal et <span class="latex_color_text">\(\sqrt{2}\)</span> pour une diagonale.</p><br>
+
+      <p><strong><span class="latex_color_text">\(h(n)\)</span> (heuristique)</strong> : estimation admissible du coût restant. Exemples :</p><br>
+      <ul style="padding-left:20px">
+        <li><strong>Manhattan (4-voies)</strong> : <span class="latex_color_text">$$h(n)=|n_x-g_x|+|n_y-g_y|$$</span></li>
+        <li><strong>Euclidienne (8-voies)</strong> : <span class="latex_color_text">$$h(n)=\sqrt{(n_x-g_x)^2+(n_y-g_y)^2}$$</span></li>
+        <li><strong>Octile / Diagonale (8-voies)</strong> : <span class="latex_color_text">$$h(n)= (\max(dx,dy)) + (\sqrt{2}-1)\min(dx,dy),$$ $$ dx=|n_x-g_x|,dy=|n_y-g_y|$$</span></li>
+      </ul>
+
+      <br><br>
+      <hr><br><h4 style="color:var(--tn-white)">Admissibilité & Optimalité</h4><br>
+      <p>Une heuristique est <em>admissible</em> si elle ne surestime jamais le coût réel restant : <span class="latex_color_text">$$\forall n,\ h(n)\leq h^*(n)$$</span> où <span class="latex_color_text">\(h^*(n)\)</span> est le coût réel optimal de <span class="latex_color_text">\(n\)</span> à Goal. Si \(h\)</span> est admissible et consistante (monotone), A* est garanti de retrouver un chemin optimal.</p>
+      <br><br>
+      <hr><br><h4 style="color:var(--tn-white)">Pourquoi choisir le plus petit <span class="latex_color_text">\(f\)</span> ?</h4><br>
+      <p>Le score <span class="latex_color_text">\(f(n)\)</span> est l'estimation du coût du meilleur chemin passant par <span class="latex_color_text">\(n\)</span> : en extrayant toujours le nœud au plus petit <span class="latex_color_text">\(f\)</span>, on explore d'abord les nœuds prometteurs (faible coût connu + faible coût estimé), ce qui minimise les explorations inutiles.</p>
+
+      <div style="margin-top:12px;padding:8px;background:var(--tn-storm);border-left:3px solid var(--tn-orange);border-radius:6px">Remarque : si l'heuristique est nulle <span class="latex_color_text">\(h\equiv0\)</span>, A* se réduit à Dijkstra.</div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+/* ============================
+   A* — improved interactive JS
+   - animations (glow/transition/morph)
+   - trace (history) clickable, step explanation
+   - MathJax LaTeX updates on demand
+   - Prism for colored Python code
+   ============================*/
+
+const state = {
+  rows:12, cols:12, start:[0,0], goal:[11,11], grid:[], cellData:{}, openSet:[], closedSet:new Set(), playing:false, playingTimer:null, delay:220, heuristic:'manhattan'
+};
+
+const codeDefinitions = {
+  'import': { title:'import', text:'Importe un module (bibliothèque) en Python.' },
+  'numpy': { title:'numpy', text:'Bibliothèque pour calcul scientifique : arrays, opérations matricielles.' },
+  'np': { title:'np', text:'Alias usuel pour numpy. Exemple : np.array, np.dot.' },
+  'def': { title:'def', text:'Déclare une fonction en Python.' },
+  'trace': { title:'np.trace', text:'Calcule la trace d\'une matrice : somme des éléments diagonaux.' },
+  'dot': { title:'np.dot', text:'Produit matriciel entre deux matrices.' },
+  'eye': { title:'np.eye', text:'Crée une matrice identité.' },
+  'copy': { title:'np.copy', text:'Retourne une copie indépendante d\'un array.' },
+  'append': { title:'append', text:'Ajoute un élément à une liste Python.' },
+  'return': { title:'return', text:'Renvoie une valeur depuis une fonction.' },
+  'for': { title:'for', text:'Boucle en Python.' },
+  'range': { title:'range', text:'Génère une suite d\'entiers en Python.' },
+  'print': { title:'print', text:'Affiche du texte.' }
+};
+
+    // Helper DOM
+    function $(sel){ return document.querySelector(sel); }
+    function $all(sel){ return Array.from(document.querySelectorAll(sel)); }
+
+    // Escape caractères HTML
+function escapeHtml(str){
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Transforme le code python en tokens cliquables
+function markupCodeTokens(){
+  const codeEl = document.getElementById('python-code');
+  if(!codeEl) return;
+
+  const raw = codeEl.textContent || '';
+  const tokens = Object.keys(codeDefinitions).sort((a,b)=>b.length - a.length);
+
+  let escaped = escapeHtml(raw);
+
+  for(const tk of tokens){
+    const safe = tk.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const re = new RegExp('\\b' + safe + '\\b', 'g');
+    escaped = escaped.replace(re, `<span class="clickable" data-term="${tk}">${safe}</span>`);
+  }
+
+  escaped = escaped.replace(/ {2}/g,'&nbsp;&nbsp;')
+                   .replace(/\t/g,'&nbsp;&nbsp;&nbsp;&nbsp;')
+                   .replace(/\n/g,'<br>');
+
+  codeEl.innerHTML = escaped;
+}
+  
+
+    // Utility: escape HTML
+    function escapeHtml(str){
+      return str.replace(/&/g, '&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // Wrap tokens in the code block with <span class="clickable" data-term="...">
+    function markupCodeTokens(){
+      const codeEl = document.getElementById('python-code');
+      if(!codeEl) return;
+      // get raw text (no HTML)
+      const raw = codeEl.textContent || '';
+      // list tokens to wrap (from keys of codeDefinitions)
+      const tokens = Object.keys(codeDefinitions).sort((a,b)=>b.length - a.length); // longest first
+      // Escape HTML and then replace tokens with span
+      // We'll preserve whitespace and newlines by splitting and rebuilding
+      let escaped = escapeHtml(raw);
+      // Replace token occurrences with marker spans — use word boundaries \b for safe matching
+      for(const tk of tokens){
+        // build regex with word boundaries; for tokens containing dots (np.trace) allow dot-less matches too
+        const safeTk = tk.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+        const re = new RegExp('\\b' + safeTk + '\\b', 'g');
+        escaped = escaped.replace(re, `<span class="clickable" data-term="${tk}">${safeTk}</span>`);
+      }
+      // Now replace multiple spaces with &nbsp; to preserve indentation visually
+      escaped = escaped.replace(/ {2}/g, '&nbsp;&nbsp;').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+      // keep newlines
+      escaped = escaped.replace(/\n/g, '<br>');
+      codeEl.innerHTML = escaped;
+      // Allow Prism to re-run highlighting if you want — but since we replaced with our spans, Prism won't re-apply.
+      // Our spans are styled with .clickable for hover; this is acceptable.
+    }
+
+    // Popover behavior
+    function initPopover(){
+      const pop = $('#popover-panel');
+      let showTimer = null;
+      document.addEventListener('mousemove', (e) => {
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        if(!el) { hidePopover(); return; }
+        const token = el.closest && el.closest('.clickable') ? (el.closest('.clickable')) : (el.classList && el.classList.contains('clickable') ? el : null);
+        if(token && token.dataset && token.dataset.term){
+          const term = token.dataset.term;
+          const def = codeDefinitions[term] || { title: term, text: 'Définition indisponible.' };
+          $('#popover-title').textContent = def.title;
+          $('#popover-content').textContent = def.text;
+          // position with offset and keep inside viewport
+          const offsetX = 14, offsetY = 12;
+          let left = e.clientX + offsetX;
+          let top = e.clientY + offsetY;
+          const maxLeft = window.innerWidth - pop.offsetWidth - 10;
+          const maxTop = window.innerHeight - pop.offsetHeight - 10;
+          if(left > maxLeft) left = Math.max(10, e.clientX - pop.offsetWidth - 20);
+          if(top > maxTop) top = Math.max(10, e.clientY - pop.offsetHeight - 20);
+          pop.style.left = left + 'px';
+          pop.style.top = top + 'px';
+          pop.classList.add('popover-visible');
+        } else {
+          hidePopover();
+        }
+      });
+      function hidePopover(){
+        if(pop) pop.classList.remove('popover-visible');
+      }
+    }
+
+
+
+
+const gridEl = document.getElementById('grid');
+const openListEl = document.getElementById('open-list');
+const closedListEl = document.getElementById('closed-list');
+const statusEl = document.getElementById('status');
+const logEl = document.getElementById('log');
+const traceListEl = document.getElementById('trace-list');
+const stepExplainEl = document.getElementById('step-explain');
+
+const btnPlay = document.getElementById('btn-play');
+const btnStep = document.getElementById('btn-step');
+const btnPause = document.getElementById('btn-pause');
+const btnReset = document.getElementById('btn-reset');
+const btnExport = document.getElementById('btn-export');
+const heuristicSelect = document.getElementById('heuristic');
+const gridSizeInput = document.getElementById('grid-size');
+
+const stepNodeEl = document.getElementById('step-node');
+const stepGValEl = document.getElementById('step-g-val');
+const stepGBarEl = document.getElementById('step-g-bar');
+const stepHValEl = document.getElementById('step-h-val');
+const stepHBarEl = document.getElementById('step-h-bar');
+const stepFValEl = document.getElementById('step-f-val');
+const stepFBarEl = document.getElementById('step-f-bar');
+
+// trace array holds chronological events for playback / explanation
+let trace = []; // entries: {type:'pop'|'open'|'goal', key, g,h,f, info}
+let astate = null;
+
+/* simple heap helpers */
+function heapPush(heap, item){ heap.push(item); let i=heap.length-1; while(i>0){ const p=Math.floor((i-1)/2); if(heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]]=[heap[i], heap[p]]; i=p; }}
+function heapPop(heap){ if(heap.length===0) return null; const top=heap[0]; const last=heap.pop(); if(heap.length>0){ heap[0]=last; let i=0; while(true){ let l=2*i+1, r=2*i+2, s=i; if(l<heap.length && heap[l][0]<heap[s][0]) s=l; if(r<heap.length && heap[r][0]<heap[s][0]) s=r; if(s===i) break; [heap[i], heap[s]]=[heap[s], heap[i]]; i=s; }} return top; }
+
+function heuristicFun(type,a,b){ const dx=Math.abs(a[0]-b[0]); const dy=Math.abs(a[1]-b[1]); if(type==='manhattan') return dx+dy; if(type==='euclidean') return Math.sqrt(dx*dx+dy*dy); if(type==='diag') return Math.max(dx,dy) + (Math.SQRT2-1)*Math.min(dx,dy); return dx+dy; }
+
+function initGrid(r=state.rows,c=state.cols){ state.rows=r; state.cols=c; state.grid=Array.from({length:r}, ()=>Array(c).fill(0)); state.cellData={}; state.openSet=[]; state.closedSet=new Set(); state.playing=false; clearTimer(); astate=null; trace = [];
+  gridEl.style.gridTemplateColumns = `repeat(${c}, 44px)`;
+  gridEl.innerHTML='';
+  for(let i=0;i<r;i++){ for(let j=0;j<c;j++){ const cell=document.createElement('div'); cell.className='cell'; cell.dataset.r=i; cell.dataset.c=j; cell.id=`cell-${i}-${j}`; cell.innerHTML=`<div class="label">${i},${j}</div><div class="sub"></div><div class="fh"></div>`; cell.addEventListener('click', onCellClick); gridEl.appendChild(cell); }}
+  setStartGoal([0,0],[r-1,c-1]); renderAll(); updateStatus('Idle'); log('Grid initialized'); clearMathVis(); renderTraceList(); }
+
+function setStartGoal(s,g){ const prevStart=document.querySelector('.cell.start'); if(prevStart) prevStart.classList.remove('start'); const prevGoal=document.querySelector('.cell.goal'); if(prevGoal) prevGoal.classList.remove('goal'); state.start=s; state.goal=g; state.grid[s[0]][s[1]] = 0; state.grid[g[0]][g[1]] = 0; document.getElementById(`cell-${s[0]}-${s[1]}`).classList.add('start'); document.getElementById(`cell-${g[0]}-${g[1]}`).classList.add('goal'); }
+
+function onCellClick(e){ if(state.playing) return; const r=parseInt(this.dataset.r,10), c=parseInt(this.dataset.c,10); if(e.ctrlKey||e.metaKey){ setStartGoal([r,c], state.goal); log(`Start set to ${r},${c}`); renderAll(); return; } if(e.shiftKey){ setStartGoal(state.start, [r,c]); log(`Goal set to ${r},${c}`); renderAll(); return; } if((r===state.start[0]&&c===state.start[1])||(r===state.goal[0]&&c===state.goal[1])) return; state.grid[r][c] = state.grid[r][c] ? 0 : 1; renderCell(r,c); }
+
+function coordKey(p){ return `${p[0]}_${p[1]}`; }
+function parseKey(k){ const a=k.split('_'); return [parseInt(a[0],10), parseInt(a[1],10)]; }
+
+function renderCell(r,c){ const el=document.getElementById(`cell-${r}-${c}`); if(!el) return; el.classList.remove('wall','open','closed','path','start','goal','glow-pop','glow-open','glow-goal'); if(r===state.start[0]&&c===state.start[1]){ el.classList.add('start'); } else if(r===state.goal[0]&&c===state.goal[1]){ el.classList.add('goal'); } else if(state.grid[r][c]){ el.classList.add('wall'); }
+  const k=coordKey([r,c]); const d=state.cellData[k]; const sub=el.querySelector('.sub'); const fh=el.querySelector('.fh'); if(d&&d.g!==undefined) sub.textContent = `g:${formatNum(d.g)} h:${formatNum(d.h)}`; else sub.textContent=''; if(d&&d.f!==undefined) fh.textContent=`f:${formatNum(d.f)}`; else fh.textContent=''; if(d&&d.visualState==='open') el.classList.add('open'); if(d&&d.visualState==='closed') el.classList.add('closed'); if(d&&d.visualState==='path') el.classList.add('path'); }
+
+function formatNum(x){ if(x===undefined||x===null) return ''; return (Math.round((x+Number.EPSILON)*100)/100).toString(); }
+
+function renderAll(){ for(let i=0;i<state.rows;i++) for(let j=0;j<state.cols;j++) renderCell(i,j); renderLists(); }
+
+function log(msg){ const time=new Date().toLocaleTimeString(); logEl.textContent = `[${time}] ${msg}\n` + logEl.textContent; }
+
+function neighbors(r,c){ const deltas=[[1,0],[-1,0],[0,1],[0,-1]]; if(state.heuristic==='diag'||state.heuristic==='euclidean') deltas.push([1,1],[1,-1],[-1,1],[-1,-1]); const res=[]; for(const d of deltas){ const nr=r+d[0], nc=c+d[1]; if(nr>=0 && nr<state.rows && nc>=0 && nc<state.cols && state.grid[nr][nc]===0){ const cost = (d[0]!==0 && d[1]!==0)?Math.SQRT2:1; res.push([[nr,nc], cost]); }} return res; }
+
+function clearMathVis(){ stepNodeEl.textContent = 'Nœud : -'; stepGValEl.textContent='-'; stepGBarEl.style.width='0%'; stepHValEl.textContent='-'; stepHBarEl.style.width='0%'; stepFValEl.textContent='-'; stepFBarEl.style.width='0%'; }
+
+function updateMathVis(nodeKey,g,h,f){ if(f < 0.001) f = 0.001; let gPercent = (g / f) * 100; let hPercent = (h / f) * 100; if(gPercent + hPercent > 100.1){ const total = g + h; gPercent = (g/total)*100; hPercent = (h/total)*100; } stepNodeEl.textContent = `Nœud : ${nodeKey}`; stepGValEl.textContent = formatNum(g); stepGBarEl.style.width = `${gPercent}%`; stepHValEl.textContent = formatNum(h); stepHBarEl.style.width = `${hPercent}%`; stepFValEl.textContent = formatNum(f); stepFBarEl.style.width = `100%`; }
+
+/* Trace rendering */
+function pushTrace(entry){ trace.push(entry); renderTraceList(); }
+function renderTraceList(){ traceListEl.innerHTML=''; trace.forEach((t,i)=>{ const row=document.createElement('div'); row.className='row'; row.innerHTML = `<div style="font-weight:600">${i+1}. ${t.type} ${t.key}</div><div style="opacity:0.9">f=${formatNum(t.f)}</div>`; row.addEventListener('click', ()=> showTrace(i)); traceListEl.appendChild(row); }); }
+
+function showTrace(i){ const t = trace[i]; if(!t) return; // clear previous glows
+  document.querySelectorAll('.cell').forEach(c=>{ c.classList.remove('glow-pop','glow-open','glow-goal'); });
+  const el = document.getElementById(`cell-${t.key.replace('_','-')}`);
+  if(el){ if(t.type==='pop'){ el.classList.add('glow-pop'); } else if(t.type==='open'){ el.classList.add('glow-open'); } else if(t.type==='goal'){ el.classList.add('glow-goal'); } el.scrollIntoView({behavior:'smooth',block:'center',inline:'center'}); }
+  updateMathVis(t.key, t.g, t.h, t.f);
+  // explanatory LaTeX / text
+  let explain = '';
+  if(t.type==='pop'){
+    explain = `\(\text{Nous extrayons du OpenSet le nœud }${t.key.replace('_',',')}\)\\\n` +
+              `\(g=${formatNum(t.g)},\ h=${formatNum(t.h)},\ f=g+h=${formatNum(t.f)}\).\\\n` +
+              `C'est le nœud avec la plus petite estimation de coût total. On va relaxer ses voisins.`;
+  } else if(t.type==='open'){
+    explain = `\(\text{Voisin ouvert }${t.key.replace('_',',')}\)\\\n` +
+              `\(\text{Calcul: }g_{\text{tent}}=${formatNum(t.g)},\ h=${formatNum(t.h)},\ f=${formatNum(t.f)}\).\\\n` +
+              `Si ce chemin est meilleur, on enregistre le parent et on l'ajoute au OpenSet.`;
+  } else if(t.type==='goal'){
+    explain = `\(\text{Goal atteint en }${t.key.replace('_',',')}\).\\\n` +
+              `Reconstruction du chemin via les parents; couleur violette = chemin optimal trouvé.`;
+  }
+  stepExplainEl.innerHTML = explain;
+  // re-render MathJax (async)
+  if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise(); }
+
+/* A* core with trace events */
+function initializeAStar(){ state.openSet = []; state.closedSet = new Set(); state.cellData = {}; renderAll(); const sKey = coordKey(state.start); const h0 = heuristicFun(state.heuristic, state.start, state.goal); state.cellData[sKey] = {g:0,h:h0,f:h0,parent:null,visualState:'open'}; heapPush(state.openSet, [state.cellData[sKey].f, sKey]); pushTrace({type:'open', key:sKey, g:0, h:h0, f:h0}); updateMathVis(sKey,0,h0,h0); updateStatus('Initialized'); renderLists(); return {ready:true}; }
+
+function stepAStar(){ if(!astate){ astate = initializeAStar(); }
+  if(state.openSet.length===0){ updateStatus('No path'); log('Open set empty: no path'); astate=null; state.playing=false; clearTimer(); pushTrace({type:'info', key:'none', g:0,h:0,f:0, info:'no-path'}); renderTraceList(); return {status:'no-path'}; }
+
+  const top = heapPop(state.openSet); const fVal = top[0]; const curKey = top[1]; if(state.closedSet.has(curKey)){ renderLists(); return {status:'skip-closed'}; }
+
+  state.closedSet.add(curKey); const cur = parseKey(curKey); const curData = state.cellData[curKey]; curData.visualState='closed'; pushTrace({type:'pop', key:curKey, g:curData.g, h:curData.h, f:curData.f}); updateMathVis(curKey, curData.g, curData.h, curData.f); updateStatus(`Exploring ${curKey}`); log(`Pop ${curKey} (f=${formatNum(fVal)}, g=${formatNum(curData.g)}, h=${formatNum(curData.h)})`);
+
+  // goal?
+  if(cur[0]===state.goal[0] && cur[1]===state.goal[1]){
+    updateStatus('Goal reached'); log('Goal reached. Reconstruct path.'); const path = reconstructPathFromKey(curKey); drawPath(path); pushTrace({type:'goal', key:curKey, g:curData.g, h:curData.h, f:curData.f}); astate=null; state.playing=false; clearTimer(); renderTraceList(); return {status:'done', path}; }
+
+  const neighs = neighbors(cur[0], cur[1]);
+  for(const [nb,cost] of neighs){ const nbKey = coordKey(nb); if(state.closedSet.has(nbKey)) continue; const tentative_g = curData.g + cost; const nbData = state.cellData[nbKey]; if(!nbData || tentative_g < nbData.g){ const h = heuristicFun(state.heuristic, nb, state.goal); const f = tentative_g + h; state.cellData[nbKey] = {g:tentative_g,h:h,f:f,parent:curKey,visualState:'open'}; heapPush(state.openSet, [f, nbKey]); pushTrace({type:'open', key:nbKey, g:tentative_g, h:h, f:f}); log(` -> Open ${nbKey} (f=${formatNum(f)})`); }}
+
+  renderAll(); return {status:'continue'}; }
+
+function reconstructPathFromKey(k){ const path=[]; let cur=k; while(cur){ path.push(cur); const d=state.cellData[cur]; if(!d||!d.parent) break; cur=d.parent; } return path.reverse(); }
+
+function drawPath(pathKeys){ for(const key in state.cellData) state.cellData[key].visualState = null; pathKeys.forEach(k=>{ if(state.cellData[k]) state.cellData[k].visualState='path'; }); renderAll(); }
+
+function renderLists(){ openListEl.innerHTML=''; const arr = state.openSet.slice().map(x=>({f:x[0], key:x[1]})).sort((a,b)=>a.f-b.f); arr.slice(0,200).forEach(item=>{ const row=document.createElement('div'); row.className='row'; row.innerHTML = `<div>${item.key}</div><div style="opacity:.9">f=${formatNum(item.f)}</div>`; openListEl.appendChild(row); }); closedListEl.innerHTML=''; Array.from(state.closedSet).slice(0,500).forEach(k=>{ const row=document.createElement('div'); row.className='row'; const d = state.cellData[k]; row.innerHTML = `<div>${k}</div><div style="opacity:.6">g=${formatNum(d?.g)}</div>`; closedListEl.appendChild(row); }); }
+
+/* Controls */
+btnPlay.addEventListener('click', ()=>{ if(state.playing) return; state.heuristic = heuristicSelect.value; if(!astate) { astate = initializeAStar(); log('--- Starting A* ---'); } initializeAndPlay(); });
+
+btnPause.addEventListener('click', ()=>{ clearTimer(); state.playing=false; btnPause.disabled=true; btnPlay.disabled=false; updateStatus('Paused'); log('Paused'); });
+
+btnStep.addEventListener('click', ()=>{ if(state.playing) btnPause.click(); state.heuristic = heuristicSelect.value; if(!astate){ astate = initializeAStar(); log('--- Starting A* (Step) ---'); } const res = stepAStar(); if(res.status === 'done' || res.status === 'no-path'){ astate = null; } renderTraceList(); });
+
+btnReset.addEventListener('click', ()=>{ clearTimer(); astate=null; state.playing=false; btnPlay.disabled=false; btnPause.disabled=true; state.openSet=[]; state.closedSet=new Set(); state.cellData={}; renderAll(); clearMathVis(); updateStatus('Reset'); log('--- Algorithm Reset ---'); logEl.textContent=''; trace = []; renderTraceList(); });
+
+btnExport.addEventListener('click', ()=>{ const data = {rows:state.rows, cols:state.cols, start:state.start, goal:state.goal, grid:state.grid}; const text = JSON.stringify(data, null, 2); const blob = new Blob([text], {type:'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'astar-grid.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); });
+
+function initializeAndPlay(){ if(state.playing) return; state.playing = true; btnPlay.disabled = true; btnPause.disabled = false; state.playingTimer = setInterval(()=>{ if(!state.playing){ clearTimer(); return; } const res = stepAStar(); if(res.status==='done' || res.status==='no-path'){ clearTimer(); } }, state.delay); updateStatus('Running'); }
+
+function clearTimer(){ if(state.playingTimer){ clearInterval(state.playingTimer); state.playingTimer=null; }}
+
+function updateStatus(s){ statusEl.textContent = s; }
+
+heuristicSelect.addEventListener('change',(e)=>{ state.heuristic = e.target.value; log('Heuristic set to ' + state.heuristic); if(astate){ astate=null; clearMathVis(); updateStatus('Reset (heuristic changed)'); } });
+
+gridSizeInput.addEventListener('change',(e)=>{ const n = parseInt(e.target.value,10); if(isNaN(n)||n<6||n>28){ gridSizeInput.value = state.rows; return; } initGrid(n,n); });
+
+document.addEventListener('keydown',(e)=>{ if(e.target.matches('input')) return; if(e.key===' '||e.code==='Space'){ e.preventDefault(); if(!state.playing) btnPlay.click(); else btnPause.click(); } if(e.key==='s'||e.key==='S'){ e.preventDefault(); btnStep.click(); } if(e.key==='r'||e.key==='R'){ e.preventDefault(); btnReset.click(); } });
+
+/* init */
+initGrid(12,12); state.heuristic = heuristicSelect.value; renderAll(); updateStatus('Idle');
+
+</script>
+</body>
+</html>
