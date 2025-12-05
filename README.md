@@ -1,4 +1,4 @@
-![img/PINKARIUM-logo.png]
+![img/PINKARIUM-logo.png](https://github.com/pinkara/PINKARIUM)
 
 [![Execute experience()](https://img.shields.io/badge/%3CExecute%20experience()%3E-7aa2f7?style=for-the-badge)](https://example.com)
 
