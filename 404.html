@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>404 - Singularité</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --tn-bg: #1a1b26;
+  --tn-bg-deep: #16161e;
+  --tn-fg: #c0caf5;
+  --tn-accent: #7aa2f7;
+  --tn-cyan: #7dcfff;
+  --tn-magenta: #bb9af7;
+  --tn-orange: #ff9e64;
+  --tn-green: #9ece6a;
+  --tn-grid: #292e42;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background-color: var(--tn-bg-deep);
+  color: var(--tn-fg);
+  font-family: 'JetBrains Mono', monospace;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Grille animée blueprint */
+.bg-grid {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-image: 
+    linear-gradient(var(--tn-grid) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, var(--tn-grid) 1.5px, transparent 1.5px);
+  background-size: 60px 60px;
+  opacity: 0.4;
+  z-index: 0;
+  pointer-events: none;
+  animation: gridMove 25s linear infinite;
+}
+
+@keyframes gridMove {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(60px, 60px); }
+}
+
+/* Canvas derrière le texte */
+canvas {
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Container minimaliste (Invisible, juste pour le layout) */
+.layout-container {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  margin-top: 250px; /* Espace pour le dessin */
+  width: 100%;
+  max-width: 800px;
+  padding: 20px;
+  animation: fadeUp 1s ease-out;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Titre 404 */
+h1 {
+  font-size: 5rem;
+  font-weight: 700;
+  color: var(--tn-cyan);
+  margin: 0;
+  letter-spacing: -2px;
+  text-shadow: 0 0 30px rgba(125, 207, 255, 0.2);
+  line-height: 1;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: var(--tn-magenta);
+  margin-bottom: 15px;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+p {
+  font-size: 1.1rem;
+  color: var(--tn-fg);
+  font-weight: 300;
+  margin: 20px auto;
+  max-width: 600px;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+/* Formule Mathématique flottante */
+.math-container {
+  margin: 40px auto;
+  font-size: 1.8rem;
+  color: var(--tn-fg);
+  /* Pas de fond, juste le texte mathématique */
+  text-shadow: 0 0 20px rgba(122, 162, 247, 0.3);
+  transition: transform 0.3s ease;
+}
+.math-container:hover {
+  transform: scale(1.02);
+  color: var(--tn-accent);
+}
+
+/* Bouton Minimal */
+.btn-minimal {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 12px 30px;
+  border: 1px solid var(--tn-fg); /* Bordure fine blanche/grise */
+  color: var(--tn-fg);
+  text-decoration: none;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  background: transparent;
+}
+
+/* Debug overlay ultra-moderne */
+.debug-overlay {
+  position: fixed;
+  top: 40px; right: 40px;
+  text-align: right;
+  z-index: 100;
+  font-size: 0.8rem;
+  color: var(--tn-fg);
+  opacity: 0.8;
+  line-height: 2;
+  background: rgba(26, 27, 38, 0.7);
+  backdrop-filter: blur(15px);
+  padding: 25px 30px;
+  border-radius: 16px;
+  border: 1px solid rgba(122, 162, 247, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+  animation: slideInRight 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInRight {
+  from { 
+    opacity: 0; 
+    transform: translateX(50px); 
+  }
+  to { 
+    opacity: 0.8; 
+    transform: translateX(0); 
+  }
+}
+
+.debug-overlay:hover {
+  opacity: 1;
+  border-color: var(--tn-accent);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 30px rgba(122, 162, 247, 0.2);
+}
+
+.debug-line {
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+  font-size: 0.75rem;
+}
+
+.debug-val { 
+  color: var(--tn-green); 
+  font-weight: bold;
+  margin-left: 10px;
+  text-shadow: 0 0 10px rgba(158, 206, 106, 0.5);
+}
+
+/* Particules flottantes */
+.particle {
+  position: fixed;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--tn-cyan);
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: 0 0 8px var(--tn-cyan);
+  animation: float 12s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { 
+    opacity: 0; 
+    transform: translateY(0) translateX(0); 
+  }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { 
+    transform: translateY(-100vh) translateX(80px) rotate(360deg); 
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  h1 { 
+    font-size: 6rem; 
+    letter-spacing: -6px; 
+  }
+  .glass-panel { 
+    padding: 40px 35px; 
+  }
+  .debug-overlay { 
+    top: 15px; 
+    right: 15px; 
+    font-size: 0.7rem; 
+    padding: 15px 20px; 
+  }
+  p { font-size: 1rem; }
+  .btn { 
+    padding: 14px 30px; 
+    font-size: 0.9rem; 
+  }
+}
+
+/* Effet de glow pour les éléments interactifs */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.btn-minimal:hover {
+  border-color: var(--tn-accent);
+  color: var(--tn-accent);
+  box-shadow: 0 0 20px rgba(122, 162, 247, 0.2);
+  background: rgba(122, 162, 247, 0.05);
+}
+
+/* Debug discret en haut à droite */
+.debug-info {
+  position: fixed;
+  top: 20px; right: 20px;
+  text-align: right;
+  font-size: 0.7rem;
+  color: var(--tn-grid); /* Très sombre, discret */
+  opacity: 0.5;
+  z-index: 5;
+}
+.debug-info span { color: var(--tn-accent); }
+
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<canvas id="fourier-canvas"></canvas>
+    <!-- Debug Info Corner -->
+<div class="debug-overlay">
+  <div>ALGORITHM: <span class="debug-val">FFT_RECONSTRUCT</span></div>
+  <div>VECTORS: <span class="debug-val" id="vec-count">0</span></div>
+  <div>PRECISION: <span class="debug-val">HIGH</span></div>
+  <div>FRAME: <span class="debug-val" id="frame-count">0</span></div>
+</div>
+<div class="debug-info">
+  <div>SYS: <span id="vec-count">--</span> VEC</div>
+  <div>FRAME: <span id="frame-count">0</span></div>
+</div>
+
+<div class="layout-container">
+  <div class="subtitle">Erreur Système</div>
+  <h1>404</h1>
+  
+  <p>
+    Le chemin vers cette ressource n'a pas convergé.<br>
+    Nous avons exploré l'ensemble du plan complexe sans succès.
+  </p>
+
+  <div class="math-container">
+    \( \displaystyle \oint_{\partial \text{Web}} \frac{f(z)}{z - \text{page}} \, dz = \emptyset \)
+  </div>
+
+  <a href="../mouvement_formula/index.html" class="btn-minimal">
+    Retour à l'Origine
+  </a>
+</div>
+
+<script>
+
+<!-- Particules -->
+  for(let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = Math.random() * 100 + '%';
+    p.style.animationDelay = Math.random() * 12 + 's';
+    p.style.animationDuration = (10 + Math.random() * 6) + 's';
+    document.body.appendChild(p);
+  }    
+/**
+ * MOTEUR FOURIER 404 - MINIMALIST
+ */
+const canvas = document.getElementById('fourier-canvas');
+const ctx = canvas.getContext('2d');
+const frameCountEl = document.getElementById('frame-count');
+const vecCountEl = document.getElementById('vec-count');
+
+let time = 0;
+let path = [];
+let fourierX = [];
+let frame = 0;
+let width, height, centerX, centerY;
+
+// Palette Pro & Discrete
+const COLORS = {
+  path: "#bb9af7",            // Magenta TokyoNight
+  pathGlow: "rgba(187, 154, 247, 0.4)", // Glow plus doux
+  circle: "rgba(122, 162, 247, 0.15)",  // Cercle très fin
+  circleFill: "rgba(0,0,0,0)",          // Pas de remplissage
+  line: "rgba(122, 162, 247, 0.4)",     // Rayon discret
+  pen: "#ff9e64"
+};
+
+function resize() {
+  width = window.innerWidth;
+  height = window.innerHeight;
+  canvas.width = width;
+  canvas.height = height;
+  centerX = width / 2;
+  // Le dessin est positionné plus haut
+  centerY = height * 0.38; 
+}
+window.addEventListener('resize', resize);
+resize();
+
+// --- GÉNÉRATION CONTOUR 404 (Outline) ---
+function generateOutline404() {
+  const points = [];
+  const S = 3.0; // Échelle
+  
+  const line = (x1, y1, x2, y2, density=1.2) => {
+    const dist = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+    const steps = Math.ceil(dist * density);
+    for(let i=0; i<=steps; i++) {
+      const t = i/steps;
+      points.push({ x: (x1 + (x2-x1)*t), y: (y1 + (y2-y1)*t) });
+    }
+  };
+
+  // 4 Gauche
+  const off1 = -220;
+  line(off1+60, 80, off1+60, -80);
+  line(off1+60, -80, off1+20, -80);
+  line(off1+20, -80, off1-60, 20);
+  line(off1-60, 20, off1-60, 50);
+  line(off1-60, 50, off1+20, 50);
+  line(off1+20, 50, off1+20, 80);
+  line(off1+20, 80, off1+60, 80);
+  line(off1+60, 80, off1+20, 20, 0.3); // Pont
+  line(off1+20, 20, off1-15, 20);
+  line(off1-15, 20, off1+20, -30);
+  line(off1+20, -30, off1+20, 20);
+  line(off1+20, 20, -60, -80, 0.3); // Pont vers 0
+
+  // 0 Centre
+  const drawOval = (cx, cy, w, h, rev=false) => {
+    const steps = 70;
+    for(let i=0; i<=steps; i++) {
+      let angle = (Math.PI*2 * (i/steps)) - Math.PI/2;
+      if(rev) angle = -angle - Math.PI/2;
+      points.push({ x: cx + w * Math.cos(angle), y: cy + h * Math.sin(angle) });
+    }
+  };
+  drawOval(0,0,70,85);
+  line(0, -85, 0, -50, 0.3);
+  drawOval(0,0,30,50, true);
+  line(0, -50, 220+60, 80, 0.3); // Pont vers 4
+
+  // 4 Droite
+  const off2 = 220;
+  line(off2+60, 80, off2+60, -80);
+  line(off2+60, -80, off2+20, -80);
+  line(off2+20, -80, off2-60, 20);
+  line(off2-60, 20, off2-60, 50);
+  line(off2-60, 50, off2+20, 50);
+  line(off2+20, 50, off2+20, 80);
+  line(off2+20, 80, off2+60, 80);
+  line(off2+60, 80, off2+20, 20, 0.3);
+  line(off2+20, 20, off2-15, 20);
+  line(off2-15, 20, off2+20, -30);
+  line(off2+20, -30, off2+20, 20);
+  line(off2+20, 20, off1+60, 80, 0.1); // Boucle fermée
+
+  return points.map(p => new Complex(p.x * S, p.y * S));
+}
+
+// --- MATHS DFT ---
+class Complex {
+  constructor(a, b) { this.re = a; this.im = b; }
+  add(c) { return new Complex(this.re + c.re, this.im + c.im); }
+  mult(c) { return new Complex(this.re * c.re - this.im * c.im, this.re * c.im + this.im * c.re); }
+}
+
+function dft(x) {
+  const X = [];
+  const N = x.length;
+  for (let k = 0; k < N; k++) {
+    let sum = new Complex(0, 0);
+    for (let n = 0; n < N; n++) {
+      const phi = (2 * Math.PI * k * n) / N;
+      const c = new Complex(Math.cos(phi), -Math.sin(phi));
+      sum = sum.add(x[n].mult(c));
+    }
+    sum.re /= N; sum.im /= N;
+    let freq = k;
+    let amp = Math.sqrt(sum.re*sum.re + sum.im*sum.im);
+    let phase = Math.atan2(sum.im, sum.re);
+    X[k] = { re: sum.re, im: sum.im, freq, amp, phase };
+  }
+  return X;
+}
+
+function init() {
+  const rawPoints = generateOutline404();
+  fourierX = dft(rawPoints);
+  fourierX.sort((a, b) => b.amp - a.amp);
+  vecCountEl.innerText = fourierX.length;
+}
+
+// --- ANIMATION ---
+function animate() {
+  ctx.clearRect(0, 0, width, height);
+
+  let vx = centerX;
+  let vy = centerY;
+  const N = fourierX.length;
+  
+  for (let i = 0; i < N; i++) {
+    let prevx = vx;
+    let prevy = vy;
+    
+    let {freq, amp, phase} = fourierX[i];
+    let angle = phase + (freq * time);
+
+    vx += amp * Math.cos(angle);
+    vy += amp * Math.sin(angle);
+
+    // Dessin épuré : seulement les cercles significatifs
+    if (amp > 1.5) {
+      ctx.beginPath();
+      ctx.strokeStyle = COLORS.circle;
+      ctx.lineWidth = 1;
+      ctx.arc(prevx, prevy, amp, 0, 2 * Math.PI);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.strokeStyle = COLORS.line;
+      ctx.lineWidth = 1;
+      ctx.moveTo(prevx, prevy);
+      ctx.lineTo(vx, vy);
+      ctx.stroke();
+    }
+  }
+
+  // Traînée
+  path.unshift({x: vx, y: vy});
+  if (path.length > fourierX.length * 0.98) path.pop();
+
+  // Dessin du tracé 404 (Néon propre)
+  if (path.length > 1) {
+    ctx.beginPath();
+    ctx.strokeStyle = COLORS.path;
+    ctx.lineWidth = 3;
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = COLORS.pathGlow;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    ctx.moveTo(path[0].x, path[0].y);
+    for (let i = 1; i < path.length; i++) {
+      ctx.lineTo(path[i].x, path[i].y);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // Pointe (Pen)
+  ctx.fillStyle = COLORS.pen;
+  ctx.beginPath();
+  ctx.arc(vx, vy, 4, 0, 2*Math.PI);
+  ctx.fill();
+  
+  // Halo blanc minimal sur la pointe
+  ctx.strokeStyle = "#fff";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(vx, vy, 8, 0, 2*Math.PI);
+  ctx.stroke();
+
+  const dt = (2 * Math.PI) / N;
+  time += dt;
+  frame++;
+  if(frame % 10 === 0) frameCountEl.innerText = frame;
+
+  requestAnimationFrame(animate);
+}
+
+init();
+animate();
+</script>
+</body>
+</html>
