@@ -38,6 +38,7 @@ python -m http.server 8000
 - 🌊 **Transformée de Fourier** - Visualisation interactive
 - 🗺️ **A\* Pathfinding** - Grille avec heuristiques
 - 🧮 **Faddeev-LeVerrier** - Polynôme caractéristique
+- etc...
 
 > [!NOTE]
 > Appuyez sur `?` dans chaque module pour afficher les raccourcis clavier.
