@@ -1,6 +1,7 @@
 # 🧪 PINKARIUM
 
-[![Execute experience()](https://img.shields.io/badge/Go%20to%20Experience-7aa2f7?style=for-the-badge)](https://github.io)
+[![Execute experience()](https://img.shields.io/badge/%3CExecute%20experience()%3E-7aa2f7?style=for-the-badge)](https://example.com)
+
 
 
 
