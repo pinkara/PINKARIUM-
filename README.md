@@ -1,8 +1,8 @@
 # 🧪 PINKARIUM
 
-## ** Laboratoire Interactif d'Algorithmes & Mathématiques **
+## **Laboratoire Interactif d'Algorithmes & Mathématiques**
 
-* * Explorez les algorithmes, les transformées de Fourier et la beauté des mathématiques à travers des visualisations interactives * *
+**Explorez les algorithmes, les transformées de Fourier et la beauté des mathématiques à travers des visualisations interactives**
 
 ** Pinkarium ** est une plateforme éducative interactive qui transforme l'apprentissage des algorithmes et des mathématiques en expérience visuelle immersive. Chaque module combine théorie rigoureuse, visualisations animées et exercices interactifs dans une interface élégante au thème Tokyo Night.
 
