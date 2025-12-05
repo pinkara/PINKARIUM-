@@ -51,14 +51,14 @@ python -m http.server 8000
 - 🗺️ **A\* Pathfinding** - Grille avec heuristiques
 - 🧮 **Faddeev-LeVerrier** - Polynôme caractéristique
 
-> [!TIP]
+> [!NOTE]
 > Appuyez sur `?` dans chaque module pour afficher les raccourcis clavier.
 
 ---
 
 ## 🎨 Design System
 
-> [!INFO]
+> [!NOTE]
 > Palette Tokyo Night 
 ### Couleurs Principales
 
