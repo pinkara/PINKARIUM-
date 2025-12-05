@@ -8,18 +8,6 @@
 
 ![Screenshot of PINKARIUM](https://myoctocat.com/assets/images/base-octocat.svg)
 
-## Contenu
-### Modules Interactifs
-
-Le projet comprend plusieurs modules complets, chacun dédié à un algorithme ou concept mathématique :
-  - Transformée de Fourier
-  - A* Pathfinding
-  - Faddeev-LeVerrier
-  - Doomsday Algorithm
-  - etc...
-
-
-
 ## 🚀 Installation
 
 > [!NOTE]
