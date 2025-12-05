@@ -11,7 +11,7 @@
 
 **Pinkarium** est une plateforme éducative interactive qui transforme l'apprentissage des algorithmes et des mathématiques en expérience visuelle immersive. Chaque module combine théorie rigoureuse, visualisations animées et exercices interactifs dans une interface élégante au thème Tokyo Night.
 
-![Screenshot of PINKARIUM](img/PINKARIUM - FOURIER - EXEMPLE.png)
+![img/PINKARIUM - FOURIER - EXEMPLE.png](https://github.com/pinkara/PINKARIUM/blob/main/img/PINKARIUM%20-%20FOURIER%20-%20EXEMPLE.png?raw=true)
 
 ## 🚀 Installation
 
