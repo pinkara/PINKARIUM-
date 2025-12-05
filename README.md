@@ -2,7 +2,7 @@
   <img src="img/pinkarium_logo.svg" width="500" />
 </p>
 
-[![Execute experience()](https://img.shields.io/badge/%3CExecute%20experience()%3E-7aa2f7?style=for-the-badge)](https://example.com)
+[![Execute experience()](https://img.shields.io/badge/%3CExecute%20experience()%3E-7aa2f7?style=for-the-badge)]((https://pinkara.github.io/PINKARIUM/)
 
 
 
