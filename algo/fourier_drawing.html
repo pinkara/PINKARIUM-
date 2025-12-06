@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<!-- Favicon -->
-<link rel="icon" href="https://pinkara.github.io/PINKARIUM/favicon/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="https://pinkara.github.io/PINKARIUM/favicon/favicon-16x16.png" sizes="16x16">
-<link rel="icon" type="image/png" href="https://pinkara.github.io/PINKARIUM/favicon/favicon-32x32.png" sizes="32x32">
-<link rel="icon" type="image/png" href="https://pinkara.github.io/PINKARIUM/favicon/favicon-48x48.png" sizes="48x48">
-<link rel="manifest" href="/site.webmanifest">
-<link rel="icon" type="image/png" href="https://pinkara.github.io/PINKARIUM/favicon/android-chrome-192x192.png" sizes="192x192">
-<link rel="icon" type="image/png" href="https://pinkara.github.io/PINKARIUM/favicon/android-chrome-512x512.png" sizes="512x512">
-<link rel="apple-touch-icon" href="https://pinkara.github.io/PINKARIUM/favicon/apple-touch-icon.png">
-<link rel="mask-icon" href="https://pinkara.github.io/PINKARIUM/favicon/safari-pinned-tab.svg" color="#5bbad5">
-<link rel="icon" href="https://pinkara.github.io/PINKARIUM/favicon/favicon.svg" type="image/svg+xml">   
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Labo Fourier : Calculs & Précision</title>
+<title>Atelier Fourier - PINKARIUM</title>
+<!-- Favicon -->
+    <link rel="icon" href="https://pinkara.github.io/PINKARIUM/favicon/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="https://pinkara.github.io/PINKARIUM/favicon/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="https://pinkara.github.io/PINKARIUM/favicon/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://pinkara.github.io/PINKARIUM/favicon/favicon-48x48.png" sizes="48x48">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" type="image/png" href="https://pinkara.github.io/PINKARIUM/favicon/android-chrome-192x192.png" sizes="192x192">
+    <link rel="icon" type="image/png" href="https://pinkara.github.io/PINKARIUM/favicon/android-chrome-512x512.png" sizes="512x512">
+    <link rel="apple-touch-icon" href="https://pinkara.github.io/PINKARIUM/favicon/apple-touch-icon.png">
+    <link rel="mask-icon" href="https://pinkara.github.io/PINKARIUM/favicon/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="icon" href="https://pinkara.github.io/PINKARIUM/favicon/favicon.svg" type="image/svg+xml">   
 <script src="https://cdn.tailwindcss.com"></script>
+
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 <style>
@@ -75,7 +76,7 @@ body {
 
 /* Sidebar */
 .sidebar {
-  width: 400px;
+  width: 420px;
   background: var(--tn-bg-2);
   border-right: 1px solid var(--tn-border);
   padding: 20px;
@@ -96,6 +97,7 @@ body {
 }
 
 /* Components */
+h1 { color: var(--tn-white); font-weight: 800; font-size: 1.4rem; margin:0; line-height: 1.2; }
 h2 { color: var(--tn-cyan); font-weight: 700; font-size: 1.1rem; margin: 0 0 8px 0; }
 h3 { color: var(--tn-magenta); font-weight: 600; font-size: 0.95rem; margin: 12px 0 6px 0; }
 p { font-size: 0.85rem; line-height: 1.5; color: var(--tn-fg); margin: 0 0 10px 0; opacity: 0.9; }
@@ -276,7 +278,7 @@ input[type="checkbox"] { accent-color: var(--tn-accent); transform: scale(1.2); 
 
 <!-- Tab Navigation -->
 <div class="tab-bar">
-  <div class="tab active" onclick="switchMode('analyze')" id="tab-analyze">Mode 1 : TP Mathématique \( ({\color{#9ece6a} c}_{\color{orange} 0}, {\color{#9ece6a} c}_{\color{orange} 1}, {\color{#9ece6a} c}_{\color{orange} -1}) \)</div>
+  <div class="tab active" onclick="switchMode('analyze')" id="tab-analyze">Mode 1 : TP Mathématique</div>
   <div class="tab" onclick="switchMode('synthesize')" id="tab-synthesize">Mode 2 : Synthèse (Saisie)</div>
 </div>
 
@@ -295,38 +297,45 @@ input[type="checkbox"] { accent-color: var(--tn-accent); transform: scale(1.2); 
 
 </div>
 
+<!-- HIDDEN SVG PARSER CONTAINER -->
+<div id="svg-parser-container" style="display:none;"></div>
+
 <!-- TEMPLATES FOR SIDEBAR -->
 <template id="tmpl-analyze">
   <div>
-    <h2>1. Théorie & Acquisition</h2>
-
-    <!-- Section Théorie -->
-    <div class="control-group" style="margin-bottom:15px;">
-      <h3 style="margin-top:0; cursor:pointer;" onclick="toggleTheory()">📘 Du Continu au Discret (Théorie) ▼</h3>
-      <div id="theory-content" class="collapsible-content">
-        
-        <p><strong>1. Formule Continue (Théorique)</strong><br>
-        Si votre dessin était une courbe parfaite \( f({\color{#bb9af7}t}) \) :</p>
-        <div class="math-formula-box" style="border-left-color:var(--tn-cyan)">
-           \( \displaystyle {\color{#9ece6a} c}_{\color{orange}n} = \int_0^1 f({\color{#bb9af7}t}) \cdot e^{-2\pi i {\color{orange}n} {\color{#bb9af7}t}} \, d{\color{#bb9af7}t} \)
-        </div>
-        
-        <p><strong>2. Lien avec les Courbes de Bézier (SVG)</strong><br>
-        En informatique (vectoriel), \( f({\color{#bb9af7}t}) \) est décrite par des courbes de <strong>Bézier</strong> (polynômes). C'est le format SVG.</p>
-        <button class="btn secondary" style="font-size:0.75rem; padding:4px 8px; margin-bottom:8px;" onclick="showSvgCode()">👁️ Voir mon \(f({\color{#bb9af7}t})\) (Code SVG)</button>
-        <div id="svg-display" class="svg-code-box" style="display:none;"></div>
-        
-        <p style="margin-top:8px;"><strong>3. Formule Discrète (Pratique)</strong><br>
-        Pour calculer, on échantillonne \(f({\color{#bb9af7}t})\) en \({\color{#f7768e}N}\) points \( x_k \) (pixels) :</p>
-        <div class="math-formula-box">
-          \( \displaystyle {\color{#9ece6a} c}_{\color{orange}n} \approx \frac{1}{{\color{#f7768e}N}} \sum_{k=0}^{{\color{#f7768e}N}-1} x_k \cdot e^{-i \frac{2\pi}{{\color{#f7768e}N}} {\color{orange}n} k} \)
-        </div>
+    <!-- HEADER GENRE A* -->
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+      <div style="min-width:40px; width:40px; height:40px; background:linear-gradient(135deg, var(--tn-magenta), var(--tn-accent)); border-radius:10px; display:flex; align-items:center; justify-content:center; color:#000; font-weight:800;">FFT</div>
+      <div>
+        <h1>Séries de Fourier</h1>
+        <div style="color:var(--tn-fg); font-size:0.8rem; opacity:0.8;">Décomposition & Reconstruction</div>
       </div>
     </div>
-    
-    <!-- Image Upload Section -->
+
+    <h2>1. Acquisition</h2>
+
+    <!-- SVG & Trace Tools -->
+    <div class="control-group" style="margin-bottom:15px;">
+      <h3 style="margin-top:0;">Tracé & Import</h3>
+      
+      <p style="margin-bottom:5px;">Tracez à la main ou importez un SVG :</p>
+      
+      <div class="toolbar" style="margin-bottom:10px;">
+        <button id="btn-undo" class="btn secondary icon-only" title="Annuler" onclick="undoAction()">↶</button>
+        <button id="btn-redo" class="btn secondary icon-only" title="Rétablir" onclick="redoAction()">↷</button>
+        <button id="btn-reset" class="btn secondary" style="flex:1;">Effacer</button>
+      </div>
+      
+      <div class="file-upload-wrapper">
+        <button class="btn" style="background:var(--tn-bg-2); border:1px dashed var(--tn-accent); color:var(--tn-accent);">📥 Importer un SVG (Path)</button>
+        <input type="file" accept=".svg" onchange="handleSVGImport(this)">
+      </div>
+      <p style="font-size:0.7rem; color:var(--tn-fg); margin-top:5px; opacity:0.6;">Prend le premier &lt;path&gt; trouvé dans le fichier.</p>
+    </div>
+
+    <!-- Image Background -->
     <div class="control-group" style="margin-bottom: 15px;">
-      <h3 style="margin-top:0;">Image de Fond (Calque)</h3>
+      <h3 style="margin-top:0;">Calque de Fond (Image)</h3>
       <div class="file-upload-wrapper">
         <button class="btn secondary">📁 Charger une image...</button>
         <input type="file" id="bg-file-input" accept="image/*" onchange="handleImageUpload(this)">
@@ -337,28 +346,32 @@ input[type="checkbox"] { accent-color: var(--tn-accent); transform: scale(1.2); 
         <button onclick="removeBgImage()" class="btn danger" style="margin-top:5px; font-size:0.75rem; padding:4px;">Retirer</button>
       </div>
     </div>
-
-    <p>Tracez votre forme \( f({\color{#bb9af7}t}) \) ci-contre.</p>
-    <p style="font-size:0.8rem; color:var(--tn-orange); margin-top:-6px;">(Clic Droit pour marquer des points)</p>
     
-    <div class="toolbar">
-        <button id="btn-undo" class="btn secondary icon-only" title="Annuler (Ctrl+Z)" onclick="undoAction()">↶</button>
-        <button id="btn-redo" class="btn secondary icon-only" title="Rétablir (Ctrl+Shift+Z)" onclick="redoAction()">↷</button>
-        <button id="btn-reset" class="btn secondary" style="flex:1;">Nouveau Tracé</button>
+    <!-- Section Théorie -->
+    <div class="control-group" style="margin-bottom:15px;">
+      <h3 style="margin-top:0; cursor:pointer;" onclick="toggleTheory()">📘 Théorie (Cliquer) ▼</h3>
+      <div id="theory-content" class="collapsible-content">
+        <p><strong>Formule Discrète (DFT) :</strong></p>
+        <div class="math-formula-box">
+          \( \displaystyle {\color{#9ece6a} c}_{\color{orange}n} \approx \frac{1}{N} \sum_{k=0}^{N-1} x_k \cdot e^{-i \frac{2\pi}{N} {\color{orange}n} k} \)
+        </div>
+        <button class="btn secondary" style="font-size:0.75rem; padding:4px 8px; margin-bottom:8px;" onclick="showSvgCode()">👁️ Voir mon Code SVG (Export)</button>
+        <div id="svg-display" class="svg-code-box" style="display:none;"></div>
+      </div>
     </div>
+
   </div>
 
   <div id="challenge-area" style="display:none;">
-    <h2>2. Calcul des Coefficients</h2>
+    <h2>2. Coefficients \( ({\color{#9ece6a} c}_{\color{orange}n}) \)</h2>
     
     <!-- Step 1: C-1 -->
     <div id="step-cneg1" class="control-group challenge-step">
       <h3>A. Coefficient \({\color{#9ece6a} c}_{\color{orange}-1} \) (n=-1)</h3>
       <div class="data-box">
-        <div style="font-weight:bold; margin-bottom:4px; color:var(--tn-magenta)">Données du tracé :</div>
         Points \({\color{#f7768e}N}\) = <span class="val-N"></span><br>
         <hr style="border-color:var(--tn-border); margin:4px 0;">
-        Résultat complexe \( ({\color{#9ece6a} c}_{\color{orange}-1}) \) :<br>
+        Résultat complexe :<br>
         \( ({\color{#ff8080}a}) \) Réel = <span id="data-cneg1-re"></span><br>
         \( ({\color{#8095ff}b}) \) Imag. = <span id="data-cneg1-im"></span> 
       </div>
@@ -380,8 +393,6 @@ input[type="checkbox"] { accent-color: var(--tn-accent); transform: scale(1.2); 
     <div id="step-c0" class="control-group challenge-step" style="opacity:0.5; pointer-events:none;">
       <h3>B. Centre \( {\color{#9ece6a} c}_{\color{orange} 0} \) (Moyenne)</h3>
       <div class="data-box">
-        <div style="font-weight:bold; margin-bottom:4px; color:var(--tn-magenta)">Données pour le calcul :</div>
-        Points \({\color{#f7768e}N}\) = <span class="val-N"></span><br>
         Somme \( \sum x_k \) = <span id="data-sumX"></span><br>
         Somme \( \sum y_k \) = <span id="data-sumY"></span>
       </div>
@@ -403,7 +414,7 @@ input[type="checkbox"] { accent-color: var(--tn-accent); transform: scale(1.2); 
     <div id="step-c1" class="control-group challenge-step" style="opacity:0.5; pointer-events:none;">
       <h3>C. Fondamentale \( {\color{#9ece6a} c}_{\color{orange}1} \) (n=1)</h3>
       <div class="data-box">
-        Résultat complexe \( ({\color{#9ece6a} c}_{\color{orange}1}) \) :<br>
+        Résultat complexe :<br>
         \( ({\color{#ff8080}a}) \) Réel = <span id="data-c1-re"></span><br>
         \( ({\color{#8095ff}b}) \) Imag. = <span id="data-c1-im"></span>
       </div>
@@ -422,7 +433,7 @@ input[type="checkbox"] { accent-color: var(--tn-accent); transform: scale(1.2); 
     </div>
 
     <div id="step-final" class="control-group" style="display:none; border-color:var(--tn-green);">
-      <button id="btn-anim" class="btn">Voir la Reconstruction</button>
+      <button id="btn-anim" class="btn">▶ Voir la Reconstruction</button>
     </div>
     
     <!-- NEW SECTION: Geometry -->
@@ -431,26 +442,25 @@ input[type="checkbox"] { accent-color: var(--tn-accent); transform: scale(1.2); 
        
        <div class="control-group">
          <div class="toggle-row">
-           <span class="toggle-label">Activer Édition \( (P_0, P_1...) \)</span>
+           <span class="toggle-label">Activer Édition Points</span>
            <input type="checkbox" id="check-edit-bezier" onchange="toggleBezierEdit(this.checked)">
          </div>
-         <p style="font-size:0.75rem; color:var(--tn-comment);">
-           Déplacez les points verts pour modifier la courbe. <br>
-           <span style="color:var(--tn-cyan)">Sélectionnez un point</span> (clic) et appuyez sur <span style="color:var(--tn-red)">SUPPR</span> pour le retirer.
+         <p style="font-size:0.75rem; color:var(--tn-fg);">
+           <span style="color:var(--tn-cyan)">Sélectionnez un point</span> et appuyez sur <span style="color:var(--tn-red)">SUPPR</span> pour le retirer.
          </p>
          
          <div style="margin-top:10px;">
-           <label style="font-size:0.8rem; color:var(--tn-cyan);">Paramètre \(t\) (Construction) : <span id="t-val-display">0.00</span></label>
+           <label style="font-size:0.8rem; color:var(--tn-cyan);">Paramètre \(t\) (De Casteljau) : <span id="t-val-display">0.00</span></label>
            <input type="range" min="0" max="1" step="0.001" value="0" oninput="updateTParam(this.value)">
          </div>
-         <p style="font-size:0.75rem; color:var(--tn-comment); margin-top:5px;">Affiche la construction de De Casteljau (tangentes).</p>
        </div>
     </div>
+    
     <!-- NEW SECTION: Cn Calculator -->
     <div id="cn-calculator" style="margin-top:20px; border-top:1px solid var(--tn-border); padding-top:15px;">
        <h2>4. Calculateur \( ({\color{#9ece6a} c}_{\color{orange}n}) \)</h2>
        <div class="control-group">
-         <p style="font-size:0.75rem; color:var(--tn-comment);">Entrez un entier \({\color{orange}n}\) pour obtenir les valeurs de \({\color{#9ece6a} c}_{\color{orange}n}\).</p>
+         <p style="font-size:0.75rem; color:var(--tn-fg);">Obtenir les valeurs pour n'importe quel n.</p>
          <div class="math-input-group">
            <label style="width:40px;">\({\color{orange}n} \) :</label>
            <input type="number" id="in-cn-n" value="1" step="1" oninput="showCnDetails(this.value)" placeholder="ex: 2, -5...">
@@ -470,7 +480,7 @@ input[type="checkbox"] { accent-color: var(--tn-accent); transform: scale(1.2); 
               <span>Rayon \( (R) \) :</span> <span id="val-cn-amp" style="font-family:monospace; color:var(--tn-orange)"></span>
             </div>
             <div style="display:flex; justify-content:space-between;">
-              <span>Phase \( (\theta) \) :</span> <span id="val-cn-phase" style="font-family:monospace; color:var(--tn-green)"></span> <span>|</span> <span id="val-cn-phase-rad" style="font-family:monospace; color:var(--tn-green)"></span>
+              <span>Phase \( (\theta) \) :</span> <span id="val-cn-phase" style="font-family:monospace; color:var(--tn-green)"></span>
             </div>
          </div>
        </div>
@@ -480,8 +490,16 @@ input[type="checkbox"] { accent-color: var(--tn-accent); transform: scale(1.2); 
 
 <template id="tmpl-synthesize">
   <div>
-    <h2>Mode Synthèse</h2>
-    <p>Construisez votre dessin cercle par cercle.</p>
+    <!-- HEADER GENRE A* (Synth) -->
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+      <div style="min-width:40px; width:40px; height:40px; background:linear-gradient(135deg, var(--tn-orange), var(--tn-red)); border-radius:10px; display:flex; align-items:center; justify-content:center; color:#000; font-weight:800;">SYN</div>
+      <div>
+        <h1>Synthèse Additive</h1>
+        <div style="color:var(--tn-fg); font-size:0.8rem; opacity:0.8;">Construction cercle par cercle</div>
+      </div>
+    </div>
+
+    <p>Construisez votre dessin manuellement.</p>
   </div>
 
   <div id="c0-controls"></div>
@@ -572,7 +590,7 @@ let fourierX = [];
 let analyzeState = 0; // 0:Drawing, 1:CNeg1, 2:C0, 3:C1, 4:Done
 let trueC0 = {re:0, im:0};
 let trueC1 = {re:0, im:0, amp:0, phase:0};
-let trueCNeg1 = {re:0, im:0, amp:0, phase:0}; // NEW
+let trueCNeg1 = {re:0, im:0, amp:0, phase:0};
 
 let isMouseDown = false;
 let mousePos = {x: -1000, y: -1000}; 
@@ -581,9 +599,9 @@ let path = [];
 
 // EDIT MODE STATE
 let isBezierEditMode = false;
-let draggingPoint = null; // { segmentIndex, pointType ('p0','cp1','cp2','p3') }
-let selectedPoint = null; // { segmentIndex, pointType } - NEW
-let tParam = 0; // 0 to 1, for De Casteljau visualization
+let draggingPoint = null; 
+let selectedPoint = null; 
+let tParam = 0; 
 
 // BACKGROUND IMAGE STATE
 let bgImg = null;
@@ -645,7 +663,6 @@ function generateBezierSegments(points, closed = false) {
   if (points.length < 2) return [];
   const segs = [];
   const len = points.length;
-  // Reduced smoothing slightly as points are now sparser
   const smoothing = 0.2; 
 
   const getP = (i) => {
@@ -707,7 +724,6 @@ function resampleBezier(segs, spacing = 5) {
   };
 
   for(let s of segs) {
-    // Estimate length to decide samples
     const d1 = Math.sqrt((s.cp1.x-s.p0.x)**2 + (s.cp1.y-s.p0.y)**2);
     const d2 = Math.sqrt((s.cp2.x-s.cp1.x)**2 + (s.cp2.y-s.cp1.y)**2);
     const d3 = Math.sqrt((s.p3.x-s.cp2.x)**2 + (s.p3.y-s.cp2.y)**2);
@@ -730,7 +746,6 @@ window.showSvgCode = function() {
   }
   const pathStr = segmentsToPath(bezierSegments);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg">
-  <!-- P0, P1, P2, P3 visibles -->
   <path d="${pathStr}" stroke="white" fill="none" />
 </svg>`;
   display.style.display = 'block';
@@ -739,7 +754,7 @@ window.showSvgCode = function() {
 
 window.toggleBezierEdit = function(val) {
   isBezierEditMode = val;
-  selectedPoint = null; // Clear selection on toggle
+  selectedPoint = null; 
   renderAnalyzeStatic();
 }
 
@@ -749,7 +764,7 @@ window.updateTParam = function(val) {
   renderAnalyzeStatic();
 }
 
-// NEW: Show Cn Details
+// Show Cn Details
 window.showCnDetails = function(val) {
   const n = parseInt(val);
   const details = document.getElementById('cn-details');
@@ -758,16 +773,13 @@ window.showCnDetails = function(val) {
     return;
   }
   
-  // Find coefficient for frequency n
   const c = fourierX.find(f => f.freq === n);
-  
   if (c && details) {
     details.style.display = 'block';
     document.getElementById('disp-n').innerText = n;
     document.getElementById('val-cn-re').innerText = c.re.toFixed(4);
     document.getElementById('val-cn-im').innerText = c.im.toFixed(4);
     document.getElementById('val-cn-amp').innerText = c.amp.toFixed(4);
-    document.getElementById('val-cn-phase-rad').innerText = (c.phase).toFixed(2) + 'rad';
     document.getElementById('val-cn-phase').innerText = (c.phase * 180 / Math.PI).toFixed(2) + '°';
   } else if (details) {
     details.style.display = 'none';
@@ -775,7 +787,7 @@ window.showCnDetails = function(val) {
 }
 
 /* =========================================
-   BACKGROUND & HISTORY
+   BACKGROUND & HISTORY & IMPORT
    ========================================= */
 window.handleImageUpload = function(input) {
   if (input.files && input.files[0]) {
@@ -790,6 +802,81 @@ window.handleImageUpload = function(input) {
       img.src = e.target.result;
     };
     reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// SVG IMPORT LOGIC
+window.handleSVGImport = function(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(e.target.result, "image/svg+xml");
+      const pathNode = doc.querySelector('path');
+      
+      if (!pathNode) {
+        alert("Aucune balise <path> trouvée dans ce SVG.");
+        return;
+      }
+
+      // We need to append the path to DOM to measure it
+      const container = document.getElementById('svg-parser-container');
+      container.innerHTML = '';
+      // Create an SVG namespace element
+      const svgNS = "http://www.w3.org/2000/svg";
+      const svgEl = document.createElementNS(svgNS, "svg");
+      // Clone the path
+      const clonedPath = document.createElementNS(svgNS, "path");
+      clonedPath.setAttribute("d", pathNode.getAttribute("d"));
+      svgEl.appendChild(clonedPath);
+      container.appendChild(svgEl);
+      
+      try {
+        const len = clonedPath.getTotalLength();
+        if(len === 0) throw new Error("Longueur nulle");
+        
+        // Sample points
+        const numPoints = 300; // Good density
+        let sampled = [];
+        let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
+
+        for(let i=0; i<numPoints; i++) {
+          const pt = clonedPath.getPointAtLength((i/numPoints)*len);
+          sampled.push({x: pt.x, y: pt.y});
+          if(pt.x < minX) minX = pt.x;
+          if(pt.x > maxX) maxX = pt.x;
+          if(pt.y < minY) minY = pt.y;
+          if(pt.y > maxY) maxY = pt.y;
+        }
+        
+        // Center and Scale to Canvas
+        const w = maxX - minX;
+        const h = maxY - minY;
+        const scale = Math.min((canvas.width * 0.6) / w, (canvas.height * 0.6) / h);
+        
+        // Center of bounding box
+        const cx = (minX + maxX) / 2;
+        const cy = (minY + maxY) / 2;
+        
+        // Apply transform: (pt - center) * scale
+        drawing = sampled.map(p => ({
+          x: (p.x - cx) * scale,
+          y: (p.y - cy) * scale
+        }));
+        
+        // Convert to Bezier segments for editing
+        bezierSegments = generateBezierSegments(drawing, true);
+        
+        // Reset state
+        saveState();
+        startMathTP(true);
+        container.innerHTML = ''; // Clean up
+        
+      } catch(err) {
+        alert("Erreur lors de la lecture du tracé SVG : " + err.message);
+      }
+    };
+    reader.readAsText(input.files[0]);
   }
 }
 
@@ -824,9 +911,8 @@ function restoreState(state) {
   drawing = JSON.parse(JSON.stringify(state.drawing));
   bezierSegments = JSON.parse(JSON.stringify(state.bezierSegments));
   markers = JSON.parse(JSON.stringify(state.markers));
-  selectedPoint = null; // Clear selection on state change
-  // Re-calc Fourier since drawing changed
-  startMathTP(false); // false = no UI reset
+  selectedPoint = null; 
+  startMathTP(false); 
   renderAnalyzeStatic();
   updateButtons();
 }
@@ -837,17 +923,14 @@ function updateButtons() {
   if(btnRedo) btnRedo.disabled = (historyIndex >= historyStack.length - 1);
 }
 
-// Global Key Listeners for Shortcuts
 document.addEventListener('keydown', (e) => {
   if (mode === 'analyze') {
-    // Undo/Redo
     if (analyzeState >= 0) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
         e.preventDefault();
         if (e.shiftKey) redoAction(); else undoAction();
       }
     }
-    // Delete Point
     if ((e.key === 'Delete' || e.key === 'Backspace') && selectedPoint && isBezierEditMode) {
       e.preventDefault();
       deleteSelectedPoint();
@@ -875,7 +958,6 @@ function initAnalyze() {
   showOverlay("Tracez une forme fermée sur l'écran", true);
   document.getElementById('btn-reset').onclick = initAnalyze;
   
-  // Re-attach listeners to handle edit mode
   canvas.onmousedown = (e) => {
     if (isBezierEditMode) handleBezierInteraction('down', e);
     else handleDraw('start', e);
@@ -895,7 +977,6 @@ function initAnalyze() {
     else handleDraw('end');
   };
   
-  // Touch support mapping
   canvas.ontouchstart = (e) => { e.preventDefault(); if (isBezierEditMode) handleBezierInteraction('down', e.touches[0]); else handleDraw('start', e.touches[0]); };
   canvas.ontouchmove = (e) => { e.preventDefault(); if (isBezierEditMode) handleBezierInteraction('move', e.touches[0]); else handleDraw('move', e.touches[0]); };
   canvas.ontouchend = () => { if (isBezierEditMode) handleBezierInteraction('up'); else handleDraw('end'); };
@@ -904,8 +985,7 @@ function initAnalyze() {
 
   canvas.oncontextmenu = (e) => {
     e.preventDefault();
-    if (isBezierEditMode) return; // No markers in edit mode
-    // We allow markers even if analyzeState > 0 now.
+    if (isBezierEditMode) return; 
     
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left - canvas.width/2;
@@ -935,14 +1015,14 @@ function handleDraw(action, e) {
     if (isMouseDown) {
       isMouseDown = false;
       if (drawing.length > 5) {
-        // 1. Simplify Drawing using RDP (Ramer-Douglas-Peucker)
+        // 1. Simplify Drawing using RDP
         const isClosed = Math.sqrt((drawing[drawing.length-1].x-drawing[0].x)**2 + (drawing[drawing.length-1].y-drawing[0].y)**2) < 20;
         const simplified = simplifyDP(drawing, 3.0); 
         
         // 2. Generate Smooth Bezier from Simplified Points
         bezierSegments = generateBezierSegments(simplified, isClosed);
         
-        // 3. Re-sample for DFT (Physics)
+        // 3. Re-sample for DFT
         drawing = resampleBezier(bezierSegments);
         
         saveState();
@@ -955,30 +1035,27 @@ function handleDraw(action, e) {
 // Edit Mode Interaction
 function handleBezierInteraction(action, e) {
   if (action === 'down') {
-    // Find clicked point
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left - canvas.width/2;
     const my = e.clientY - rect.top - canvas.height/2;
     
-    // Check points
     let hit = null;
     const hitDist = 8;
     for(let i=0; i<bezierSegments.length; i++) {
       const s = bezierSegments[i];
-      if (dist({x:mx, y:my}, s.p3) < hitDist) { hit = {i, type:'p3'}; break; } // Anchor (End)
+      if (dist({x:mx, y:my}, s.p3) < hitDist) { hit = {i, type:'p3'}; break; }
       if (dist({x:mx, y:my}, s.cp1) < hitDist) { hit = {i, type:'cp1'}; break; }
       if (dist({x:mx, y:my}, s.cp2) < hitDist) { hit = {i, type:'cp2'}; break; }
-      if (dist({x:mx, y:my}, s.p0) < hitDist) { hit = {i, type:'p0'}; break; } // Anchor (Start)
+      if (dist({x:mx, y:my}, s.p0) < hitDist) { hit = {i, type:'p0'}; break; } 
     }
 
-    // Set dragging and selection state
     if (hit) {
       draggingPoint = hit;
-      selectedPoint = hit; // Select on click
+      selectedPoint = hit; 
     } else {
-      selectedPoint = null; // Deselect if click on empty space
+      selectedPoint = null; 
     }
-    renderAnalyzeStatic(); // Force re-render to show selection
+    renderAnalyzeStatic(); 
 
   } else if (action === 'move' && draggingPoint) {
     const rect = canvas.getBoundingClientRect();
@@ -989,9 +1066,6 @@ function handleBezierInteraction(action, e) {
     bezierSegments[i][type].x = mx;
     bezierSegments[i][type].y = my;
     
-    // Constraint: Keep C1 continuous? 
-    // For simplicity, we assume segments are connected by p3 of prev = p0 of next
-    // If we move p3 of segment i, we must move p0 of segment i+1
     const len = bezierSegments.length;
     if (type === 'p3') {
        const nextI = (i + 1) % len;
@@ -1003,9 +1077,8 @@ function handleBezierInteraction(action, e) {
        bezierSegments[prevI].p3.y = my;
     }
     
-    // Live update of DFT?
     drawing = resampleBezier(bezierSegments);
-    startMathTP(false); // Update math without UI reset
+    startMathTP(false); 
     
   } else if (action === 'up') {
     if (draggingPoint) {
@@ -1019,34 +1092,20 @@ function deleteSelectedPoint() {
   if (!selectedPoint || bezierSegments.length <= 1) return;
   const {i, type} = selectedPoint;
   
-  // Only allow deleting Anchors (Knots) to modify topology
   if (type === 'p3' || type === 'p0') {
-    // Identify which "Knot" we are deleting.
-    // P3 of segment i connects to P0 of segment i+1.
-    // If user selected P0 of segment i, it's the knot at start of i (end of i-1).
-    
     let targetIdx = i;
-    // Map selection to "End of Segment X"
     if (type === 'p0') {
       targetIdx = (i - 1 + bezierSegments.length) % bezierSegments.length;
     }
-    
-    // We want to remove the knot at end of targetIdx.
-    // This means merging targetIdx and (targetIdx+1).
     const nextIdx = (targetIdx + 1) % bezierSegments.length;
     
-    // Merge logic: Extend target segment to end at next segment's end
     bezierSegments[targetIdx].p3 = bezierSegments[nextIdx].p3;
-    // Keep next segment's CP2 for shape continuity approx
     bezierSegments[targetIdx].cp2 = bezierSegments[nextIdx].cp2;
-    
-    // Remove the next segment
     bezierSegments.splice(nextIdx, 1);
     
-    // Update Drawing
     drawing = resampleBezier(bezierSegments);
     startMathTP(false);
-    selectedPoint = null; // Clear selection
+    selectedPoint = null; 
     renderAnalyzeStatic();
     saveState();
   }
@@ -1056,57 +1115,45 @@ function startMathTP(resetUI = true) {
   const complexData = drawing.map(p => new Complex(p.x, p.y));
   fourierX = dft(complexData);
   
-  // Store True Values for Steps
-  // C0
   let c0Obj = fourierX.find(f => f.freq === 0);
   trueC0 = c0Obj ? {re: c0Obj.re, im: c0Obj.im} : {re:0, im:0};
   
-  // C1
   let c1Obj = fourierX.find(f => f.freq === 1);
   trueC1 = c1Obj || {re:0, im:0, amp:0, phase:0};
   
-  // CNeg1 (New)
   let cNeg1Obj = fourierX.find(f => f.freq === -1);
   trueCNeg1 = cNeg1Obj || {re:0, im:0, amp:0, phase:0};
 
-  // Sort for animation
   fourierX.sort((a, b) => b.amp - a.amp);
   
   if (resetUI) {
-    analyzeState = 1; // Start with CNeg1
+    analyzeState = 1; 
     document.getElementById('challenge-area').style.display = 'block';
-    document.getElementById('step-cneg1').classList.add('active'); // Activate C-1 First
-    // document.querySelector('.toolbar').style.display = 'none'; // REMOVED: Toolbar stays visible
+    document.getElementById('step-cneg1').classList.add('active'); 
   }
 
-  // Update Data Display
   let sumX = 0, sumY = 0;
   drawing.forEach(p => { sumX += p.x; sumY += p.y; });
   
-  // Update ALL N values
   document.querySelectorAll('.val-N').forEach(el => el.innerText = drawing.length);
   
-  // Update C-1 (Start)
   const cNeg1ReEl = document.getElementById('data-cneg1-re');
   if(cNeg1ReEl) {
       cNeg1ReEl.innerText = trueCNeg1.re.toFixed(1);
       document.getElementById('data-cneg1-im').innerText = trueCNeg1.im.toFixed(1);
   }
 
-  // Update C0 (Sum X/Y)
   const sumXEl = document.getElementById('data-sumX'); 
   if (sumXEl) sumXEl.innerText = sumX.toFixed(0);
   const sumYEl = document.getElementById('data-sumY');
   if (sumYEl) sumYEl.innerText = sumY.toFixed(0);
   
-  // Update C1
   const c1ReEl = document.getElementById('data-c1-re');
   if(c1ReEl) {
       c1ReEl.innerText = trueC1.re.toFixed(1);
       document.getElementById('data-c1-im').innerText = trueC1.im.toFixed(1);
   }
   
-  // Update Cn calculator if open
   const cnInput = document.getElementById('in-cn-n');
   if (cnInput && fourierX.length > 0) showCnDetails(cnInput.value);
 
@@ -1114,7 +1161,7 @@ function startMathTP(resetUI = true) {
   if (window.MathJax) window.MathJax.typesetPromise();
 }
 
-// Check C-1 (New First Step)
+// Check C-1
 window.checkCNeg1 = function() {
   const inAmp = parseFloat(document.getElementById('in-cneg1-amp').value);
   const inPhase = parseFloat(document.getElementById('in-cneg1-phase').value);
@@ -1231,26 +1278,20 @@ function renderAnalyzeStatic() {
     for (let idx = 0; idx < bezierSegments.length; idx++) {
       const s = bezierSegments[idx];
       
-      // Handles lines (Faint green)
       ctx.strokeStyle = "rgba(158, 206, 106, 0.4)"; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(s.p0.x+cx, s.p0.y+cy); ctx.lineTo(s.cp1.x+cx, s.cp1.y+cy); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(s.p3.x+cx, s.p3.y+cy); ctx.lineTo(s.cp2.x+cx, s.cp2.y+cy); ctx.stroke();
       
-      // Points Helper Function with NEW HOVER LOGIC
       const drawPoint = (pt, label, type) => {
         const d = dist(mousePos, pt);
         const isHover = d < 10;
-        
-        // Check if this specific point is selected
         const isSelected = selectedPoint && selectedPoint.i === idx && selectedPoint.type === type;
         
         ctx.beginPath();
-        // Point is visible, but slightly bigger on hover
         ctx.arc(pt.x + cx, pt.y + cy, isHover ? 6 : 4, 0, Math.PI*2);
-        ctx.fillStyle = "#9ece6a"; // --tn-green
+        ctx.fillStyle = "#9ece6a"; 
         ctx.fill();
         
-        // Selection Halo
         if (isSelected) {
           ctx.strokeStyle = "#fff";
           ctx.lineWidth = 2;
@@ -1262,7 +1303,6 @@ function renderAnalyzeStatic() {
           ctx.stroke();
         }
         
-        // Coordinates: ONLY on hover
         if (isHover) {
           ctx.fillStyle = "#9ece6a";
           ctx.font = "11px monospace";
@@ -1271,44 +1311,35 @@ function renderAnalyzeStatic() {
       };
 
       drawPoint(s.p0, "P0", 'p0');
-      drawPoint(s.cp1, "P1", 'cp1'); // CP1 often called P1 in Cubic
-      drawPoint(s.cp2, "P2", 'cp2'); // CP2 often called P2
+      drawPoint(s.cp1, "P1", 'cp1'); 
+      drawPoint(s.cp2, "P2", 'cp2');
       drawPoint(s.p3, "P3", 'p3');
     }
   }
 
   // Draw De Casteljau Construction (Param t)
-  // tParam is 0..1 global. Map to specific segment.
   if (bezierSegments.length > 0) {
     const totalLen = bezierSegments.length;
     const globalT = tParam * totalLen;
     const segIdx = Math.min(Math.floor(globalT), totalLen - 1);
-    const localT = globalT - segIdx; // 0..1 inside segment
+    const localT = globalT - segIdx; 
     
-    // Linear interpolation helper
     const lerp = (a, b, t) => ({ x: a.x + (b.x - a.x)*t, y: a.y + (b.y - a.y)*t });
     
     const s = bezierSegments[segIdx];
-    // Level 1
     const q0 = lerp(s.p0, s.cp1, localT);
     const q1 = lerp(s.cp1, s.cp2, localT);
     const q2 = lerp(s.cp2, s.p3, localT);
-    // Level 2
     const r0 = lerp(q0, q1, localT);
     const r1 = lerp(q1, q2, localT);
-    // Level 3 (Point on Curve)
     const pos = lerp(r0, r1, localT);
     
-    // Draw Construction
     if (tParam > 0) {
       ctx.strokeStyle = "rgba(158, 206, 106, 0.5)"; ctx.lineWidth = 1;
-      // L1
       ctx.beginPath(); ctx.moveTo(q0.x+cx, q0.y+cy); ctx.lineTo(q1.x+cx, q1.y+cy); ctx.lineTo(q2.x+cx, q2.y+cy); ctx.stroke();
-      // L2
       ctx.strokeStyle = "rgba(255, 158, 100, 0.7)";
       ctx.beginPath(); ctx.moveTo(r0.x+cx, r0.y+cy); ctx.lineTo(r1.x+cx, r1.y+cy); ctx.stroke();
       
-      // Point
       ctx.fillStyle = "var(--tn-magenta)";
       ctx.beginPath(); ctx.arc(pos.x+cx, pos.y+cy, 5, 0, Math.PI*2); ctx.fill();
     }
